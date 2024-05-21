@@ -22,8 +22,5 @@ int main(int argc, char** argv) {
     }
     cout << image.size() << '\n';
     Vec3b Corner = image.at<Vec3b>(0);
-    Mat mask;
-    mask.create(image.size(), CV_8UC1);
-    
     return 0;
 }
