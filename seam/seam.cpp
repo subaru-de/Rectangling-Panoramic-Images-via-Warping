@@ -123,5 +123,16 @@ void Seam::getHorizontal(const Mat &img) {
             M.at<double>(i, j) += E.at<double>(i, j);
         }
     }
+    vector<Point> horSeam(1, {0, img.cols - 1});
+    int mn = M.at<double>(0, img.cols - 1);
+    for (int i = 1; i < img.rows; i++) {
+        if (M.at<double>(i, img.cols - 1) < mn) {
+            mn = M.at<double>(i, img.cols - 1);
+            horSeam[0] = {i, img.cols - 1};
+        }
+    }
+    for (; horSeam.back().y > 0; ) {
+        horSeam.push_back({from.at<double>(horSeam.back()), horSeam.back().y - 1});
+    }
     // !!! check horizontal seam
 }
