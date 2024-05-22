@@ -1,3 +1,4 @@
+#include <cmath>
 #include <iostream>
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
@@ -27,8 +28,21 @@ void Seam::getEnergy(const Mat &img) {
     Rect rect = Rect(0, 0, 3, 3);
     for (int i = 1; i < img.rows - 1; i++) {
         for (int j = 1; j < img.cols - 1; j++) {
-            E.at<double>(i, j) = sobelVer.dot(img(rect)) + sobelHor.dot(img(rect));
+            Vec3d tmp = sobelVer.dot(img(rect));
+            // !!! check broadcast !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+            E.at<double>(i, j) = sqrt(tmp.dot(tmp));
+            tmp = sobelHor.dot(img(rect));
+            E.at<double>(i, j) += sqrt(tmp.dot(tmp));
+            rect.x++;
         }
+        rect.y++;
+        rect.x = 0;
+    }
+    for (int i = 0; i < img.rows; i++) {
+        E.at<double>(i, 0) = E.at<double>(i, img.cols - 1) = 1e8;
+    }
+    for (int j = 0; j < img.cols; j++) {
+        E.at<double>(0, j) = E.at<double>(img.rows - 1, j) = 1e8;
     }
     // !!! check if E is right.
 }
@@ -37,7 +51,7 @@ void Seam::getVertical(const Mat &img) {
     Mat M, from;
     M.create(img.size(), CV_64FC1);
     from.create(img.size(), CV_32SC1);
-    for (int j = 0; j < img.rows; j++) {
+    for (int j = 0; j < img.cols; j++) {
         M.at<double>(0, j) = E.at<double>(0, j);
     }
     for (int i = 1; i < img.rows; i++) {
@@ -55,6 +69,18 @@ void Seam::getVertical(const Mat &img) {
             M.at<double>(i, j) += E.at<double>(i, j);
         }
     }
+    vector<Point> verSeam(1, {img.rows - 1, 0});
+    int mn = M.at<double>(img.rows - 1, 0);
+    for (int j = 1; j < img.cols; j++) {
+        if (M.at<double>(img.rows - 1, j) < mn) {
+            mn = M.at<double>(img.rows - 1, j);
+            verSeam[0] = {img.rows - 1, j};
+        }
+    }
+    for (; verSeam.back().x > 0; ) {
+        verSeam.push_back({verSeam.back().x - 1, from.at<double>(verSeam.back())});
+    }
+    // !!! check vertical seam
 }
 
 void Seam::getHorizontal(const Mat &img) {
@@ -79,4 +105,5 @@ void Seam::getHorizontal(const Mat &img) {
             M.at<double>(i, j) += E.at<double>(i, j);
         }
     }
+    // !!! check horizontal seam
 }
