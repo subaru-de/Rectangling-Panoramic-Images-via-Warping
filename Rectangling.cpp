@@ -3,6 +3,7 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 #include <opencv2/opencv.hpp>
+#include <Rectangling.h>
 
 using std::cout;
 using std::string;
@@ -20,8 +21,6 @@ int main(int argc, char** argv) {
         std::cout << "\n Durn, couldn't read image filename " << filename << std::endl;
         return 1;
     }
-    cout << image.size() << '\n';
-    Vec3b Corner = image.at<Vec3b>(0);
-    
+    Rectangling rc(image);
     return 0;
 }
