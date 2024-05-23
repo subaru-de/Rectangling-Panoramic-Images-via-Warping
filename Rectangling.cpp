@@ -22,5 +22,7 @@ int main(int argc, char** argv) {
         return 1;
     }
     Rectangling rc(image);
+    rc.insertSeam();
+    rc.showImg();
     return 0;
 }

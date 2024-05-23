@@ -3,7 +3,10 @@ project(Rectangling)
 add_executable(Rectangling Rectangling.cpp)
 
 find_package(OpenCV REQUIRED)
-include_directories(${OpenCV_INCLUDE_DIRS})
+include_directories(
+    ${CMAKE_SOURCE_DIR}
+    ${OpenCV_INCLUDE_DIRS}
+)
 target_link_libraries(Rectangling ${OpenCV_LIBS})
 
 add_subdirectory(glad)

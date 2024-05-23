@@ -28,6 +28,7 @@ public:
     Rectangling(Mat image);
     void getRect(Rect &rect, DirectionType DType, CornerType CType, int seamLen);
     void insertSeam();
+    void showImg();
 };
 
 Rectangling::Rectangling(Mat image):
@@ -156,4 +157,8 @@ void Rectangling::insertSeam() {
             seam.insertHorizontal(img(rect));
         }
     }
+}
+
+void Rectangling::showImg() {
+    imshow("Image after seam carving", img);
 }
