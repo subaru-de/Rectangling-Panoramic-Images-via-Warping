@@ -15,12 +15,12 @@ class Seam {
 private:
     Mat E;
 public:
-    void getEnergy(const Mat &img);
-    void insertVertical(Mat &img);
-    void insertHorizontal(Mat &img);
+    Seam(const Mat &img);
+    void insertVertical(Mat &img, CornerType CType);
+    void insertHorizontal(Mat &img, CornerType CType);
 };
 
-void Seam::getEnergy(const Mat &img) {
+Seam::Seam(const Mat &img) {
     E.create(img.size(), CV_64FC1);
     // Mat sobelVer = (Mat_<Vec3d>(3, 3) <<
     //     Vec3d(-1, -1, -1), Vec3b(-2, -2, -2), Vec3b(-1, -1, -1),
@@ -72,7 +72,7 @@ void Seam::getEnergy(const Mat &img) {
     // !!! check if E is right.
 }
 
-void Seam::insertVertical(Mat &img) {
+void Seam::insertVertical(Mat &img, CornerType CType) {
     Mat M, from;
     M.create(img.size(), CV_64FC1);
     from.create(img.size(), CV_32SC1);
