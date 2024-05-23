@@ -143,6 +143,8 @@ void Seam::insertVertical(Mat &img, CornerType CType) {
 
 void Seam::insertHorizontal(Mat &img, CornerType CType) {
     cout << "-------- insert horizontal seam --------\n";
+    
+    /* -------- Find Horizontal Seam -------- */
     cout << "sub-image size: " << img.size() << '\n';
     Mat M, from;
     M.create(img.size(), CV_64FC1);
@@ -165,7 +167,6 @@ void Seam::insertHorizontal(Mat &img, CornerType CType) {
             M.at<double>(i, j) += E.at<double>(i, j);
         }
     }
-    /* Segmentation fault */
     vector<Point> horSeam(1, {0, img.cols - 1});
     int mn = M.at<double>(0, img.cols - 1);
     for (int i = 1; i < img.rows; i++) {
@@ -174,10 +175,11 @@ void Seam::insertHorizontal(Mat &img, CornerType CType) {
             horSeam[0] = {i, img.cols - 1};
         }
     }
-    cout << "qwqwq\n";
+    /* Segmentation fault */
     for (; horSeam.back().y > 0; ) {
         horSeam.push_back({from.at<int>(horSeam.back()), horSeam.back().y - 1});
     }
+    cout << "qwqwq\n";
     // !!! check horizontal seam
     
     /* -------- Insert Horizontal Seam -------- */
