@@ -17,6 +17,7 @@ enum DirectionType {
 class Rectangling {
 private:
     Mat &img;
+    Mat mask;
     Vec3b Corner;
 public:
     Rectangling(Mat &image);
@@ -27,31 +28,33 @@ public:
 
 Rectangling::Rectangling(Mat &image):
 img(image) {
+    mask.create(img.size(), CV_8UC1, Scalar(1));
     Corner = image.at<Vec3b>(0);
     cout << "Size of the input image: " << img.size() << "\n";
+    cout << img.rows << ' ' << img.cols << '\n';
 }
 
 void Rectangling::getRect(Rect &rect, DirectionType DType, CornerType CType, int seamLen) {
     if (DType == Vertical) {
-        rect.y = 0;
+        rect.x = 0;
         rect.width = img.cols;
-        rect.height = seamLen + 1;
+        rect.height = seamLen;
         if (CType == TopLeft || CType == TopRight) {
-            rect.x = 0;
+            rect.y = 0;
         }
         else { // Bottom
-            rect.x = img.rows - seamLen;
+            rect.y = img.rows - seamLen;
         }
     }
     else { // Horizontal
-        rect.x = 0;
-        rect.width = seamLen + 1;
+        rect.y = 0;
+        rect.width = seamLen;
         rect.height = img.rows;
         if (CType == TopLeft || CType == BottomLeft) { // Left
-            rect.y = 0;
+            rect.x = 0;
         }
         else { // Right
-            rect.y = img.cols - seamLen;
+            rect.x = img.cols - seamLen;
         }
     }
 }
@@ -62,6 +65,7 @@ void Rectangling::insertSeam() {
     Seam seam(img);
     
     for (int loopCount = 0; ; loopCount++) {
+        showImg();
         printf("-------- loopCount: %d --------\n", loopCount);
         /* ------- Vertical --------*/
         int flag[2] = {-1, -1};
@@ -99,7 +103,7 @@ void Rectangling::insertSeam() {
             verType = BottomRight;
             verLen = img.rows - flag[1];
         }
-        // Len is (length - 1)
+        verLen++;
 
         /* ------- Horizontal --------*/
         flag[0] = flag[1] = -1;
@@ -137,13 +141,16 @@ void Rectangling::insertSeam() {
             horType = BottomRight;
             horLen = img.cols - flag[1];
         }
+        horLen++;
 
         printf("verLen: %d\t verType: %d\n", verLen, verType);
         printf("horLen: %d\t horType: %d\n", horLen, horType);
 
-        if (verLen == -1 && horLen == -1) break;
+        if (verLen == 0 && horLen == 0) break;
         /* -------- choose vertical or horizontal -------- */
         Rect rect;
+        // roi.x + roi.width <= m.cols
+        // roi.y + roi.height <= m.rows
         Mat tmpImg;
         if (verLen >= horLen) { // Vertical
             // get rect
