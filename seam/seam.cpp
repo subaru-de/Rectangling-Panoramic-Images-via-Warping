@@ -4,6 +4,13 @@
 #include <GLFW/glfw3.h>
 #include <opencv2/opencv.hpp>
 
+enum CornerType {
+    TopLeft = 0,
+    TopRight = 1,
+    BottomLeft = 3,
+    BottomRight = 4
+};
+
 class Seam {
 private:
     Mat E;
@@ -102,12 +109,31 @@ void Seam::insertVertical(Mat &img) {
     // !!! check vertical seam
 
     /* -------- Insert Vertical Seam -------- */
-    for (int i = 0; i < img.rows; i++) {
-
+    if (CType == TopRight || CType == BottomRight) {
+        for (int i = 0; i < img.rows; i++) {
+            for (int j = img.cols - 1; j > verSeam[i]; j--) {
+                img.at<Vec3b>(i, j) = img.at<Vec3b>(i, j - 1);
+            }
+            if (verSeam[i] > 0) {
+                img.at<Vec3b>(i, verSeam[i]) += img.at<Vec3b>(i, verSeam[i] - 1);
+                img.at<Vec3b>(i, verSeam[i]) /= 2;
+            }
+        }
+    }
+    else {
+        for (int i = 0; i < img.rows; i++) {
+            for (int j = 0; j < verSeam[i]; j++) {
+                img.at<Vec3b>(i, j) = img.at<Vec3b>(i, j + 1);
+            }
+            if (verSeam[i] < img.cols - 1) {
+                img.at<Vec3b>(i, verSeam[i]) += img.at<Vec3b>(i, verSeam[i] + 1);
+                img.at<Vec3b>(i, verSeam[i]) /= 2;
+            }
+        }
     }
 }
 
-void Seam::insertHorizontal(Mat &img) {
+void Seam::insertHorizontal(Mat &img, CornerType CType) {
     Mat M, from;
     M.create(img.size(), CV_64FC1);
     from.create(img.size(), CV_32SC1);
@@ -141,4 +167,28 @@ void Seam::insertHorizontal(Mat &img) {
         horSeam.push_back({from.at<double>(horSeam.back()), horSeam.back().y - 1});
     }
     // !!! check horizontal seam
+    
+    /* -------- Insert Horizontal Seam -------- */
+    if (CType == BottomLeft || CType == BottomRight) {
+        for (int j = 0; j < img.cols; j++) {
+            for (int i = img.rows - 1; i > horSeam[j]; i--) {
+                img.at<Vec3b>(i, j) = img.at<Vec3b>(i - 1, j);
+            }
+            if (horSeam[j] > 0) {
+                img.at<Vec3b>(horSeam[j], j) += img.at<Vec3b>(horSeam[j] - 1, j);
+                img.at<Vec3b>(horSeam[j], j) /= 2;
+            }
+        }
+    }
+    else {
+        for (int j = 0; j < img.cols; j++) {
+            for (int i = 0; i < horSeam[j]; i++) {
+                img.at<Vec3b>(i, j) = img.at<Vec3b>(i + 1, j);
+            }
+            if (horSeam[j] < img.rows - 1) {
+                img.at<Vec3b>(horSeam[j], j) += img.at<Vec3b>(horSeam[j] + 1, j);
+                img.at<Vec3b>(horSeam[j], j) /= 2;
+            }
+        }
+    }
 }
