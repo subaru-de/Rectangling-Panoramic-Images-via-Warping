@@ -9,8 +9,8 @@ private:
     Mat E;
 public:
     void getEnergy(const Mat &img);
-    void getVertical(const Mat &img);
-    void getHorizontal(const Mat &img);
+    void insertVertical(Mat &img);
+    void insertHorizontal(Mat &img);
 };
 
 void Seam::getEnergy(const Mat &img) {
@@ -65,7 +65,7 @@ void Seam::getEnergy(const Mat &img) {
     // !!! check if E is right.
 }
 
-void Seam::getVertical(const Mat &img) {
+void Seam::insertVertical(Mat &img) {
     Mat M, from;
     M.create(img.size(), CV_64FC1);
     from.create(img.size(), CV_32SC1);
@@ -98,10 +98,16 @@ void Seam::getVertical(const Mat &img) {
     for (; verSeam.back().x > 0; ) {
         verSeam.push_back({verSeam.back().x - 1, from.at<double>(verSeam.back())});
     }
+    reverse(verSeam.begin(), verSeam.end());
     // !!! check vertical seam
+
+    /* -------- Insert Vertical Seam -------- */
+    for (int i = 0; i < img.rows; i++) {
+
+    }
 }
 
-void Seam::getHorizontal(const Mat &img) {
+void Seam::insertHorizontal(Mat &img) {
     Mat M, from;
     M.create(img.size(), CV_64FC1);
     from.create(img.size(), CV_32SC1);
