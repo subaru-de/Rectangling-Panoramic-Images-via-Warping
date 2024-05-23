@@ -1,8 +1,12 @@
 #include <cmath>
+#include <vector>
 #include <iostream>
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 #include <opencv2/opencv.hpp>
+
+using namespace cv;
+using std::vector;
 
 enum CornerType {
     TopLeft = 0,
@@ -82,14 +86,14 @@ void Seam::insertVertical(Mat &img, CornerType CType) {
     for (int i = 1; i < img.rows; i++) {
         for (int j = 0; j < img.cols; j++) {
             M.at<double>(i, j) = M.at<double>(i - 1, j);
-            from.at<double>(i, j) = j;
+            from.at<int>(i, j) = j;
             if (j > 0 && M.at<double>(i - 1, j - 1) < M.at<double>(i, j)) {
                 M.at<double>(i, j) = M.at<double>(i - 1, j - 1);
-                from.at<double>(i, j) = j - 1;
+                from.at<int>(i, j) = j - 1;
             }
             if (j < img.cols - 1 && M.at<double>(i - 1, j + 1) < M.at<double>(i, j)) {
                 M.at<double>(i, j) = M.at<double>(i - 1, j + 1);
-                from.at<double>(i, j) = j + 1;
+                from.at<int>(i, j) = j + 1;
             }
             M.at<double>(i, j) += E.at<double>(i, j);
         }
@@ -103,7 +107,7 @@ void Seam::insertVertical(Mat &img, CornerType CType) {
         }
     }
     for (; verSeam.back().x > 0; ) {
-        verSeam.push_back({verSeam.back().x - 1, from.at<double>(verSeam.back())});
+        verSeam.push_back({verSeam.back().x - 1, from.at<int>(verSeam.back())});
     }
     reverse(verSeam.begin(), verSeam.end());
     // !!! check vertical seam
@@ -111,23 +115,23 @@ void Seam::insertVertical(Mat &img, CornerType CType) {
     /* -------- Insert Vertical Seam -------- */
     if (CType == TopRight || CType == BottomRight) {
         for (int i = 0; i < img.rows; i++) {
-            for (int j = img.cols - 1; j > verSeam[i]; j--) {
+            for (int j = img.cols - 1; j > verSeam[i].y; j--) {
                 img.at<Vec3b>(i, j) = img.at<Vec3b>(i, j - 1);
             }
-            if (verSeam[i] > 0) {
-                img.at<Vec3b>(i, verSeam[i]) += img.at<Vec3b>(i, verSeam[i] - 1);
-                img.at<Vec3b>(i, verSeam[i]) /= 2;
+            if (verSeam[i].y > 0) {
+                img.at<Vec3b>(verSeam[i]) += img.at<Vec3b>(verSeam[i].x, verSeam[i].y - 1);
+                img.at<Vec3b>(verSeam[i]) /= 2;
             }
         }
     }
-    else {
+    else { // Left
         for (int i = 0; i < img.rows; i++) {
-            for (int j = 0; j < verSeam[i]; j++) {
+            for (int j = 0; j < verSeam[i].y; j++) {
                 img.at<Vec3b>(i, j) = img.at<Vec3b>(i, j + 1);
             }
-            if (verSeam[i] < img.cols - 1) {
-                img.at<Vec3b>(i, verSeam[i]) += img.at<Vec3b>(i, verSeam[i] + 1);
-                img.at<Vec3b>(i, verSeam[i]) /= 2;
+            if (verSeam[i].y < img.cols - 1) {
+                img.at<Vec3b>(verSeam[i]) += img.at<Vec3b>(verSeam[i].x, verSeam[i].y + 1);
+                img.at<Vec3b>(verSeam[i]) /= 2;
             }
         }
     }
@@ -143,14 +147,14 @@ void Seam::insertHorizontal(Mat &img, CornerType CType) {
     for (int j = 1; j < img.cols; j++) {
         for (int i = 0; i < img.rows; i++) {
             M.at<double>(i, j) = M.at<double>(i, j - 1);
-            from.at<double>(i, j) = i;
+            from.at<int>(i, j) = i;
             if (i > 0 && M.at<double>(i - 1, j - 1) < M.at<double>(i, j)) {
                 M.at<double>(i, j) = M.at<double>(i - 1, j - 1);
-                from.at<double>(i, j) = i - 1;
+                from.at<int>(i, j) = i - 1;
             }
             if (i < img.rows - 1 && M.at<double>(i + 1, j - 1) < M.at<double>(i, j)) {
                 M.at<double>(i, j) = M.at<double>(i + 1, j - 1);
-                from.at<double>(i, j) = i + 1;
+                from.at<int>(i, j) = i + 1;
             }
             M.at<double>(i, j) += E.at<double>(i, j);
         }
@@ -164,30 +168,30 @@ void Seam::insertHorizontal(Mat &img, CornerType CType) {
         }
     }
     for (; horSeam.back().y > 0; ) {
-        horSeam.push_back({from.at<double>(horSeam.back()), horSeam.back().y - 1});
+        horSeam.push_back({from.at<int>(horSeam.back()), horSeam.back().y - 1});
     }
     // !!! check horizontal seam
     
     /* -------- Insert Horizontal Seam -------- */
     if (CType == BottomLeft || CType == BottomRight) {
         for (int j = 0; j < img.cols; j++) {
-            for (int i = img.rows - 1; i > horSeam[j]; i--) {
+            for (int i = img.rows - 1; i > horSeam[j].x; i--) {
                 img.at<Vec3b>(i, j) = img.at<Vec3b>(i - 1, j);
             }
-            if (horSeam[j] > 0) {
-                img.at<Vec3b>(horSeam[j], j) += img.at<Vec3b>(horSeam[j] - 1, j);
-                img.at<Vec3b>(horSeam[j], j) /= 2;
+            if (horSeam[j].x > 0) {
+                img.at<Vec3b>(horSeam[j]) += img.at<Vec3b>(horSeam[j].x - 1, horSeam[j].y);
+                img.at<Vec3b>(horSeam[j]) /= 2;
             }
         }
     }
     else {
         for (int j = 0; j < img.cols; j++) {
-            for (int i = 0; i < horSeam[j]; i++) {
+            for (int i = 0; i < horSeam[j].x; i++) {
                 img.at<Vec3b>(i, j) = img.at<Vec3b>(i + 1, j);
             }
-            if (horSeam[j] < img.rows - 1) {
-                img.at<Vec3b>(horSeam[j], j) += img.at<Vec3b>(horSeam[j] + 1, j);
-                img.at<Vec3b>(horSeam[j], j) /= 2;
+            if (horSeam[j].x < img.rows - 1) {
+                img.at<Vec3b>(horSeam[j]) += img.at<Vec3b>(horSeam[j].x + 1, horSeam[j].y);
+                img.at<Vec3b>(horSeam[j]) /= 2;
             }
         }
     }

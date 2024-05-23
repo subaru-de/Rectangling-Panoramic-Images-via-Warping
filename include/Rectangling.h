@@ -3,38 +3,32 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 #include <opencv2/opencv.hpp>
+#include <Seam.h>
 
 using std::cout;
 using std::string;
 using namespace cv;
 
-enum CornerType {
-    TopLeft = 0,
-    TopRight = 1,
-    BottomLeft = 3,
-    BottomRight = 4
-};
-
 enum DirectionType {
     Vertical = 0,
     Horizontal = 1
-}
+};
 
 class Rectangling {
 private:
     Mat &img;
     Vec3b Corner;
 public:
-    Rectangling(Mat image);
+    Rectangling(Mat &image);
     void getRect(Rect &rect, DirectionType DType, CornerType CType, int seamLen);
     void insertSeam();
     void showImg();
 };
 
-Rectangling::Rectangling(Mat image):
+Rectangling::Rectangling(Mat &image):
 img(image) {
-    cout << image.size() << '\n';
     Corner = image.at<Vec3b>(0);
+    cout << img.size() << "quq\n";
 }
 
 void Rectangling::getRect(Rect &rect, DirectionType DType, CornerType CType, int seamLen) {
@@ -64,7 +58,7 @@ void Rectangling::getRect(Rect &rect, DirectionType DType, CornerType CType, int
 
 void Rectangling::insertSeam() {
     int horLen = 0, verLen = 0;
-    int horType, verType;
+    CornerType horType, verType;
     Seam seam(img);
     
     for (; ; ) {
@@ -107,7 +101,7 @@ void Rectangling::insertSeam() {
         // Len is (length - 1)
 
         /* ------- Horizontal --------*/
-        flag[2] = {-1, -1};
+        flag[0] = flag[1] = -1;
         for (int j = 0; j < img.cols; j++) {
             if (flag[0] == j - 1 && img.at<Vec3b>(0, j) == Corner) {
                 flag[0] = j;
@@ -146,19 +140,23 @@ void Rectangling::insertSeam() {
         if (verLen == -1 && horLen == -1) break;
         /* -------- choose vertical or horizontal -------- */
         Rect rect;
+        Mat tmpImg = img(rect);
         if (verLen >= horLen) {
             // get rect
             getRect(rect, Horizontal, verType, verLen);
-            seam.insertVertical(img(rect));
+            seam.insertVertical(tmpImg, verType);
         }
         else {
             // get rect
             getRect(rect, Vertical, horType, horLen);
-            seam.insertHorizontal(img(rect));
+            seam.insertHorizontal(tmpImg, horType);
         }
+        img(rect) = tmpImg;
     }
 }
 
 void Rectangling::showImg() {
+    cout << "qwqwq " << img.size() << '\n';
     imshow("Image after seam carving", img);
+    waitKey(0);
 }

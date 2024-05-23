@@ -422,8 +422,14 @@ CMakeFiles/Rectangling.dir/Rectangling.cpp.o: ../Rectangling.cpp \
   /usr/local/include/opencv4/opencv2/stitching/detail/camera.hpp \
   /usr/local/include/opencv4/opencv2/video.hpp \
   /usr/local/include/opencv4/opencv2/video/tracking.hpp \
-  /usr/local/include/opencv4/opencv2/video/background_segm.hpp
+  /usr/local/include/opencv4/opencv2/video/background_segm.hpp \
+  ../include/Rectangling.h \
+  ../include/Seam.h
 
+
+../include/Seam.h:
+
+../include/Rectangling.h:
 
 /usr/local/include/opencv4/opencv2/video/tracking.hpp:
 
