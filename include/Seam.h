@@ -54,6 +54,7 @@ Seam::Seam(const Mat &img) {
             Vec3d tmp;
             // !!! check broadcast !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
             for (int c = 0; c < 3; c++) {
+                channel[c].convertTo(channel[c], CV_64F);
                 tmp[c] = sobelVer.dot(channel[c]);
             }
             E.at<double>(i, j) = sqrt(tmp.dot(tmp));

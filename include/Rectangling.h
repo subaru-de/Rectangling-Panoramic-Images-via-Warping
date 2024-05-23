@@ -28,7 +28,7 @@ public:
 Rectangling::Rectangling(Mat &image):
 img(image) {
     Corner = image.at<Vec3b>(0);
-    cout << img.size() << "quq\n";
+    cout << "Size of the input image: " << img.size() << "\n";
 }
 
 void Rectangling::getRect(Rect &rect, DirectionType DType, CornerType CType, int seamLen) {
@@ -61,7 +61,8 @@ void Rectangling::insertSeam() {
     CornerType horType, verType;
     Seam seam(img);
     
-    for (; ; ) {
+    for (int loopCount = 0; ; loopCount++) {
+        printf("-------- loopCount: %d --------\n", loopCount);
         /* ------- Vertical --------*/
         int flag[2] = {-1, -1};
         for (int i = 0; i < img.rows; i++) {
@@ -156,7 +157,7 @@ void Rectangling::insertSeam() {
 }
 
 void Rectangling::showImg() {
-    cout << "qwqwq " << img.size() << '\n';
+    // cout << "qwqwq " << img.size() << '\n';
     imshow("Image after seam carving", img);
     waitKey(0);
 }
