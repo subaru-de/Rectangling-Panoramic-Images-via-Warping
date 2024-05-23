@@ -145,15 +145,17 @@ void Rectangling::insertSeam() {
         /* -------- choose vertical or horizontal -------- */
         Rect rect;
         Mat tmpImg;
-        if (verLen >= horLen) {
+        if (verLen >= horLen) { // Vertical
             // get rect
-            getRect(rect, Horizontal, verType, verLen);
+            getRect(rect, Vertical, verType, verLen);
+            printf("V rect.x: %d\t rect.y: %d\t rect.width: %d\t rect.height: %d\n", rect.x, rect.y, rect.width, rect.height);
             tmpImg = img(rect);
             seam.insertVertical(tmpImg, verType);
         }
-        else {
+        else { // Horizontal
             // get rect
-            getRect(rect, Vertical, horType, horLen);
+            getRect(rect, Horizontal, horType, horLen);
+            printf("H rect.x: %d\t rect.y: %d\t rect.width: %d\t rect.height: %d\n", rect.x, rect.y, rect.width, rect.height);
             tmpImg = img(rect);
             seam.insertHorizontal(tmpImg, horType);
         }
