@@ -138,18 +138,23 @@ void Rectangling::insertSeam() {
             horLen = img.cols - flag[1];
         }
 
+        printf("verLen: %d\t verType: %d\n", verLen, verType);
+        printf("horLen: %d\t horType: %d\n", horLen, horType);
+
         if (verLen == -1 && horLen == -1) break;
         /* -------- choose vertical or horizontal -------- */
         Rect rect;
-        Mat tmpImg = img(rect);
+        Mat tmpImg;
         if (verLen >= horLen) {
             // get rect
             getRect(rect, Horizontal, verType, verLen);
+            tmpImg = img(rect);
             seam.insertVertical(tmpImg, verType);
         }
         else {
             // get rect
             getRect(rect, Vertical, horType, horLen);
+            tmpImg = img(rect);
             seam.insertHorizontal(tmpImg, horType);
         }
         img(rect) = tmpImg;

@@ -5,8 +5,9 @@
 #include <GLFW/glfw3.h>
 #include <opencv2/opencv.hpp>
 
-using namespace cv;
+using std::cout;
 using std::vector;
+using namespace cv;
 
 enum CornerType {
     TopLeft = 0,
@@ -78,6 +79,8 @@ Seam::Seam(const Mat &img) {
 }
 
 void Seam::insertVertical(Mat &img, CornerType CType) {
+    cout << "-------- insert vertical seam --------\n";
+    cout << "sub-image size: " << img.size() << '\n';
     Mat M, from;
     M.create(img.size(), CV_64FC1);
     from.create(img.size(), CV_32SC1);
@@ -139,6 +142,8 @@ void Seam::insertVertical(Mat &img, CornerType CType) {
 }
 
 void Seam::insertHorizontal(Mat &img, CornerType CType) {
+    cout << "-------- insert horizontal seam --------\n";
+    cout << "sub-image size: " << img.size() << '\n';
     Mat M, from;
     M.create(img.size(), CV_64FC1);
     from.create(img.size(), CV_32SC1);
@@ -160,6 +165,7 @@ void Seam::insertHorizontal(Mat &img, CornerType CType) {
             M.at<double>(i, j) += E.at<double>(i, j);
         }
     }
+    /* Segmentation fault */
     vector<Point> horSeam(1, {0, img.cols - 1});
     int mn = M.at<double>(0, img.cols - 1);
     for (int i = 1; i < img.rows; i++) {
@@ -168,6 +174,7 @@ void Seam::insertHorizontal(Mat &img, CornerType CType) {
             horSeam[0] = {i, img.cols - 1};
         }
     }
+    cout << "qwqwq\n";
     for (; horSeam.back().y > 0; ) {
         horSeam.push_back({from.at<int>(horSeam.back()), horSeam.back().y - 1});
     }
