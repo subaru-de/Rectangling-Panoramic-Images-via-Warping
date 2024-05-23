@@ -9,11 +9,11 @@ using std::cout;
 using std::vector;
 using namespace cv;
 
-enum CornerType {
-    TopLeft = 0,
-    TopRight = 1,
-    BottomLeft = 3,
-    BottomRight = 4
+enum BoarderType {
+    Top = 0,
+    Bottom = 1,
+    Left = 3,
+    Right = 4
 };
 
 class Seam {
