@@ -28,10 +28,41 @@ public:
 
 Rectangling::Rectangling(Mat &image):
 img(image) {
-    mask.create(img.size(), CV_8UC1, Scalar(1));
     Corner = image.at<Vec3b>(0);
     cout << "Size of the input image: " << img.size() << "\n";
     cout << img.rows << ' ' << img.cols << '\n';
+    
+    mask.create(img.size(), CV_8UC1, Scalar(1));
+    for (int i = 0; i < img.rows; i++) {
+        for (int j = 0; j < img.cols; j++) {
+            if (img.at<Vec3b>(i, j) == Corner) {
+                mask.at<uchar>(i, j) = 0;
+            }
+            else break;
+        }
+        for (int j = img.cols - 1; j >= 0; j--) {
+            if (img.at<Vec3b>(i, j) == Corner) {
+                mask.at<uchar>(i, j) = 0;
+            }
+            else break;
+        }
+    }
+    for (int j = 0; j < img.cols; j++) {
+        for (int i = 0; i < img.rows; i++) {
+            if (mask.at<uchar>(i, j) == 0) break;
+            else if (img.at<Vec3b>(i, j) == Corner) {
+                mask.at<uchar>(i, j) = 0;
+            }
+            else break;
+        }
+        for (int i = img.rows - 1; i >= 0; i--) {
+            if (mask.at<uchar>(i, j) == 0) break;
+            else if (img.at<Vec3b>(i, j) == Corner) {
+                mask.at<uchar>(i, j) = 0;
+            }
+            else break;
+        }
+    }
 }
 
 void Rectangling::getRect(Rect &rect, DirectionType DType, CornerType CType, int seamLen) {
