@@ -11,6 +11,9 @@ using std::string;
 using std::vector;
 using namespace cv;
 
+const Vec3b Black = Vec3b(0, 0, 0);
+const Vec3b White = Vec3b(255, 255, 255);
+
 enum DirectionType {
     Vertical = 0,
     Horizontal = 1
@@ -69,6 +72,18 @@ img(image) {
             else break;
         }
     }
+
+    /* -------- show mask -------- */
+    Mat outImg;
+    outImg.create(img.size(), CV_8UC3);
+    for (int i = 0; i < img.rows; i++) {
+        for (int j = 0; j < img.cols; j++) {
+            if (mask.at<uchar>(i, j)) outImg.at<Vec3b>(i, j) = White;
+            else outImg.at<Vec3b>(i, j) = Black;
+        }
+    }
+    imshow("qwqwq", outImg);
+    waitKey(0);
     
     // 初始化位移场
     disp.resize(img.rows, vector<Point>(img.cols, {0, 0}));
