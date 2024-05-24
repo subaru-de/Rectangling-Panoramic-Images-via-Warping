@@ -20,9 +20,19 @@ class Seam {
 private:
     Mat E;
 public:
+    const Mat sobelVer = (Mat_<double>(3, 3) <<
+        -1, -2, -1,
+        0, 0, 0,
+        1, 2, 1
+    );
+    const Mat sobelHor = (Mat_<double>(3, 3) <<
+        -1, 0, 1,
+        -2, 0, 2,
+        -1, 0, 1
+    );
     Seam(const Mat &img);
-    void insertVertical(Mat &img, CornerType CType);
-    void insertHorizontal(Mat &img, CornerType CType);
+    void insertVertical(Mat &img, Mat &mask, BoarderType CType);
+    void insertHorizontal(Mat &img, Mat &mask, BoarderType CType);
 };
 
 Seam::Seam(const Mat &img) {
@@ -37,16 +47,6 @@ Seam::Seam(const Mat &img) {
     //     Vec3d(-2, -2, -2), Vec3d(0, 0, 0), Vec3b(2, 2, 2),
     //     Vec3d(-1, -1, -1), Vec3b(0, 0, 0), Vec3b(1, 1, 1)
     // );
-    Mat sobelVer = (Mat_<double>(3, 3) <<
-        -1, -2, -1,
-        0, 0, 0,
-        1, 2, 1
-    );
-    Mat sobelHor = (Mat_<double>(3, 3) <<
-        -1, 0, 1,
-        -2, 0, 2,
-        -1, 0, 1
-    );
     Rect rect = Rect(0, 0, 3, 3);
     Mat channel[3];
     for (int i = 1; i < img.rows - 1; i++) {
@@ -78,7 +78,7 @@ Seam::Seam(const Mat &img) {
     // !!! check if E is right.
 }
 
-void Seam::insertVertical(Mat &img, CornerType CType) {
+void Seam::insertVertical(Mat &img, Mat &mask, BoarderType CType) {
     cout << "-------- insert vertical seam --------\n";
     cout << "sub-image size: " << img.size() << '\n';
     // 保证找出的 seam 在 mask == 1 范围内
@@ -149,7 +149,7 @@ void Seam::insertVertical(Mat &img, CornerType CType) {
     }
 }
 
-void Seam::insertHorizontal(Mat &img, CornerType CType) {
+void Seam::insertHorizontal(Mat &img, Mat &mask, BoarderType CType) {
     cout << "-------- insert horizontal seam --------\n";
     
     /* -------- Find Horizontal Seam -------- */
