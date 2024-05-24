@@ -100,7 +100,7 @@ void Seam::insertVertical(Mat &img, Mat &mask, BorderType BType) {
 
     /* -------- get Energy -------- */
     Mat Energy;
-    Energy.create(img.size(), CV_64F);
+    Energy.create(img.size(), CV_64FC1);
     Mat paddedImg;
     copyMakeBorder(img, paddedImg, 1, 1, 1, 1, BORDER_REPLICATE);
     
@@ -158,13 +158,14 @@ void Seam::insertVertical(Mat &img, Mat &mask, BorderType BType) {
     }
     /* -------- store seam -------- */
     vector<Point> verSeam(1, {img.rows - 1, 0});
-    int mn = M.at<double>(img.rows - 1, 0);
+    double mn = M.at<double>(img.rows - 1, 0);
     for (int j = 1; j < img.cols; j++) {
         if (M.at<double>(img.rows - 1, j) < mn) {
             mn = M.at<double>(img.rows - 1, j);
             verSeam[0] = {img.rows - 1, j};
         }
     }
+    cout << "minM: " << mn << '\n';
     for (; verSeam.back().x > 0; ) {
         int &pre = from.at<int>(verSeam.back().x, verSeam.back().y);
         verSeam.push_back({verSeam.back().x - 1, pre});
@@ -274,13 +275,14 @@ void Seam::insertHorizontal(Mat &img, Mat &mask, BorderType BType) {
     }
     /* -------- get min and store seam -------- */
     vector<Point> horSeam(1, {0, img.cols - 1});
-    int mn = M.at<double>(0, img.cols - 1);
+    double mn = M.at<double>(0, img.cols - 1);
     for (int i = 1; i < img.rows; i++) {
         if (M.at<double>(i, img.cols - 1) < mn) {
             mn = M.at<double>(i, img.cols - 1);
             horSeam[0] = {i, img.cols - 1};
         }
     }
+    cout << "minM: " << mn << '\n';
     for (; horSeam.back().y > 0; ) {
         int &pre = from.at<int>(horSeam.back().x, horSeam.back().y);
         horSeam.push_back({pre, horSeam.back().y - 1});
