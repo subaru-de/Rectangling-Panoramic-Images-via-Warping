@@ -207,7 +207,7 @@ void Rectangling::insertSeam() {
             printf("V rect.x: %d\t rect.y: %d\t rect.width: %d\t rect.height: %d\n", rect.x, rect.y, rect.width, rect.height);
             tmpImg = img(rect);
             tmpMask = mask(rect);
-            seam.insertVertical(tmpImg, verType);
+            seam.insertVertical(tmpImg, tmpMask, verType);
         }
         else { // Horizontal
             // get rect
@@ -215,7 +215,7 @@ void Rectangling::insertSeam() {
             printf("H rect.x: %d\t rect.y: %d\t rect.width: %d\t rect.height: %d\n", rect.x, rect.y, rect.width, rect.height);
             tmpImg = img(rect);
             tmpMask = mask(rect);
-            seam.insertHorizontal(tmpImg, horType);
+            seam.insertHorizontal(tmpImg, tmpMask, horType);
         }
         img(rect) = tmpImg;
         mask(rect) = tmpMask;
