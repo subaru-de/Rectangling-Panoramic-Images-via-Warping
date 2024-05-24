@@ -176,8 +176,8 @@ void Seam::insertVertical(Mat &img, Mat &mask, BorderType BType) {
             }
             if (verSeam[i].y > 0) {
                 mask.at<uchar>(verSeam[i].x, verSeam[i].y) = 1;
-                img.at<Vec3b>(verSeam[i].x, verSeam[i].y) += img.at<Vec3b>(verSeam[i].x, verSeam[i].y - 1);
-                img.at<Vec3b>(verSeam[i].x, verSeam[i].y) /= 2;
+                Vec3d tmp = (Vec3d)img.at<Vec3b>(verSeam[i].x, verSeam[i].y) + (Vec3d)img.at<Vec3b>(verSeam[i].x, verSeam[i].y - 1);
+                img.at<Vec3b>(verSeam[i].x, verSeam[i].y) = tmp / 2;
             }
         }
     }
@@ -189,8 +189,8 @@ void Seam::insertVertical(Mat &img, Mat &mask, BorderType BType) {
             }
             if (verSeam[i].y < img.cols - 1) {
                 mask.at<uchar>(verSeam[i].x, verSeam[i].y) = 1;
-                img.at<Vec3b>(verSeam[i].x, verSeam[i].y) += img.at<Vec3b>(verSeam[i].x, verSeam[i].y + 1);
-                img.at<Vec3b>(verSeam[i].x, verSeam[i].y) /= 2;
+                Vec3d tmp = (Vec3d)img.at<Vec3b>(verSeam[i].x, verSeam[i].y) + (Vec3d)img.at<Vec3b>(verSeam[i].x, verSeam[i].y + 1);
+                img.at<Vec3b>(verSeam[i].x, verSeam[i].y) = tmp / 2;
             }
         }
     }
@@ -288,8 +288,8 @@ void Seam::insertHorizontal(Mat &img, Mat &mask, BorderType BType) {
             }
             if (horSeam[j].x > 0) {
                 mask.at<uchar>(horSeam[j].x, horSeam[j].y) = 1;
-                img.at<Vec3b>(horSeam[j].x, horSeam[j].y) += img.at<Vec3b>(horSeam[j].x - 1, horSeam[j].y);
-                img.at<Vec3b>(horSeam[j].x, horSeam[j].y) /= 2;
+                Vec3d tmp = (Vec3d)img.at<Vec3b>(horSeam[j].x, horSeam[j].y) + (Vec3d)img.at<Vec3b>(horSeam[j].x - 1, horSeam[j].y);
+                img.at<Vec3b>(horSeam[j].x, horSeam[j].y) = tmp / 2.0;
             }
         }
     }
@@ -301,8 +301,8 @@ void Seam::insertHorizontal(Mat &img, Mat &mask, BorderType BType) {
             }
             if (horSeam[j].x < img.rows - 1) {
                 mask.at<uchar>(horSeam[j].x, horSeam[j].y) = 1;
-                img.at<Vec3b>(horSeam[j].x, horSeam[j].y) += img.at<Vec3b>(horSeam[j].x + 1, horSeam[j].y);
-                img.at<Vec3b>(horSeam[j].x, horSeam[j].y) /= 2;
+                Vec3d tmp = (Vec3d)img.at<Vec3b>(horSeam[j].x, horSeam[j].y) + (Vec3d)img.at<Vec3b>(horSeam[j].x + 1, horSeam[j].y);
+                img.at<Vec3b>(horSeam[j].x, horSeam[j].y) = tmp / 2;
             }
         }
     }
