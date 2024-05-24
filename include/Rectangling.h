@@ -77,24 +77,16 @@ void Rectangling::getRect(Rect &rect, DirectionType DType, CornerType CType, int
         rect.height = seamLen;
         // roi.x + roi.width <= m.cols
         // roi.y + roi.height <= m.rows
-        if (CType == Left) {
-            
-        }
-        else if (CType == Right) {
-
-        }
+        rect.x = 0;
+        rect.y = seamEndp;
     }
     else { // Horizontal
         rect.width = seamLen;
         rect.height = img.rows;
         // roi.x + roi.width <= m.cols
         // roi.y + roi.height <= m.rows
-        if (CType == Top) {
-
-        }
-        else if (CType == Bottom) {
-
-        }
+        rect.x = seamEndp;
+        rect.y = 0;
     }
 }
 
