@@ -24,7 +24,7 @@ private:
     Vec3b Corner;
 public:
     Rectangling(Mat &image);
-    void getRect(Rect &rect, DirectionType DType, CornerType CType, int seamLen, int seamEndp);
+    void getRect(Rect &rect, DirectionType DType, BorderType BType, int seamLen, int seamEndp);
     void insertSeam();
     void showImg();
 };
@@ -74,7 +74,7 @@ img(image) {
     disp.resize(img.rows, vector<Point>(img.cols, {0, 0}));
 }
 
-void Rectangling::getRect(Rect &rect, DirectionType DType, CornerType CType, int seamLen, int seamEndp) {
+void Rectangling::getRect(Rect &rect, DirectionType DType, BorderType BType, int seamLen, int seamEndp) {
     if (DType == Vertical) { // Vertical
         rect.width = img.cols;
         rect.height = seamLen;
@@ -95,7 +95,7 @@ void Rectangling::getRect(Rect &rect, DirectionType DType, CornerType CType, int
 
 void Rectangling::insertSeam() {
     int horLen = 0, verLen = 0, horEndp = 0, verEndp = 0;
-    BoarderType horType, verType;
+    BorderType horType, verType;
     Seam seam(img);
     
     for (int loopCount = 0; ; loopCount++) {
