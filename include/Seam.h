@@ -9,6 +9,7 @@ using std::cout;
 using std::vector;
 using namespace cv;
 
+const double INF = 1e8;
 enum BorderType {
     Top = 0,
     Bottom = 1,
@@ -31,8 +32,8 @@ public:
         -1, 0, 1
     );
     Seam(const Mat &img);
-    void insertVertical(Mat &img, Mat &mask, BoarderType BType);
-    void insertHorizontal(Mat &img, Mat &mask, BoarderType BType);
+    void insertVertical(Mat &img, Mat &mask, BorderType BType);
+    void insertHorizontal(Mat &img, Mat &mask, BorderType BType);
 };
 
 Seam::Seam(const Mat &img) {
@@ -79,7 +80,7 @@ Seam::Seam(const Mat &img) {
     // !!! check if E is right.
 }
 
-void Seam::insertVertical(Mat &img, Mat &mask, BoarderType BType) {
+void Seam::insertVertical(Mat &img, Mat &mask, BorderType BType) {
     cout << "-------- insert vertical seam --------\n";
     cout << "sub-image size: " << img.size() << '\n';
     // 保证找出的 seam 在 mask == 1 范围内
@@ -115,35 +116,20 @@ void Seam::insertVertical(Mat &img, Mat &mask, BoarderType BType) {
         insertChannel(gradYChannel(Rect(1, 1, img.cols, img.rows)), gradY, c);
     }
     // 计算能量
-    for (int i = 0; i < img.rows; ++i) {
-        for (int j = 0; j < img.cols; ++j) {
+    for (int i = 0; i < img.rows; i++) {
+        for (int j = 0; j < img.cols; j++) {
             Vec3d gx = gradX.at<Vec3d>(i, j);
             Vec3d gy = gradY.at<Vec3d>(i, j);
             Energy.at<double>(i, j) = sqrt(gx.dot(gx) + gy.dot(gy));
         }
     }
-    
-    // Mat channel[3];
-    // for (int i = 1; i < img.rows - 1; i++) {
-    //     for (int j = 1; j < img.cols - 1; j++) {
-    //         split(img(cell33), channel);
-    //         Vec3d tmp;
-    //         // !!! check broadcast !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-    //         for (int c = 0; c < 3; c++) {
-    //             channel[c].convertTo(channel[c], CV_64F);
-    //             tmp[c] = sobelVer.dot(channel[c]);
-    //         }
-    //         E.at<double>(i, j) = sqrt(tmp.dot(tmp));
-            
-    //         for (int c = 0; c < 3; c++) {
-    //             tmp[c] = sobelHor.dot(channel[c]);
-    //         }
-    //         E.at<double>(i, j) += sqrt(tmp.dot(tmp));
-    //         cell33.x++;
-    //     }
-    //     cell33.y++;
-    //     cell33.x = 0;
-    // }
+    for (int i = 0; i < img.rows; i++) {
+        for (int j = 0; j < img.cols; j++) {
+            if (mask.at<uchar>(i, j) == 0) {
+                Energy.at<double>(i, j) = INF;
+            }
+        }
+    }
 
     /* -------- Dynamic Programming get M -------- */
     /* -------- Border -------- */
@@ -186,8 +172,10 @@ void Seam::insertVertical(Mat &img, Mat &mask, BoarderType BType) {
         for (int i = 0; i < img.rows; i++) {
             for (int j = img.cols - 1; j > verSeam[i].y; j--) {
                 img.at<Vec3b>(i, j) = img.at<Vec3b>(i, j - 1);
+                mask.at<uchar>(i, j) = mask.at<uchar>(i, j - 1);
             }
             if (verSeam[i].y > 0) {
+                mask.at<uchar>(verSeam[i].x, verSeam[i].y) = 1;
                 img.at<Vec3b>(verSeam[i].x, verSeam[i].y) += img.at<Vec3b>(verSeam[i].x, verSeam[i].y - 1);
                 img.at<Vec3b>(verSeam[i].x, verSeam[i].y) /= 2;
             }
@@ -197,8 +185,10 @@ void Seam::insertVertical(Mat &img, Mat &mask, BoarderType BType) {
         for (int i = 0; i < img.rows; i++) {
             for (int j = 0; j < verSeam[i].y; j++) {
                 img.at<Vec3b>(i, j) = img.at<Vec3b>(i, j + 1);
+                mask.at<uchar>(i, j) = mask.at<uchar>(i, j + 1);
             }
             if (verSeam[i].y < img.cols - 1) {
+                mask.at<uchar>(verSeam[i].x, verSeam[i].y) = 1;
                 img.at<Vec3b>(verSeam[i].x, verSeam[i].y) += img.at<Vec3b>(verSeam[i].x, verSeam[i].y + 1);
                 img.at<Vec3b>(verSeam[i].x, verSeam[i].y) /= 2;
             }
@@ -206,7 +196,7 @@ void Seam::insertVertical(Mat &img, Mat &mask, BoarderType BType) {
     }
 }
 
-void Seam::insertHorizontal(Mat &img, Mat &mask, BoarderType BType) {
+void Seam::insertHorizontal(Mat &img, Mat &mask, BorderType BType) {
     cout << "-------- insert horizontal seam --------\n";
     
     /* -------- Find Horizontal Seam -------- */
@@ -238,11 +228,18 @@ void Seam::insertHorizontal(Mat &img, Mat &mask, BoarderType BType) {
         insertChannel(gradYChannel(Rect(1, 1, img.cols, img.rows)), gradY, c);
     }
     // 计算能量
-    for (int i = 0; i < img.rows; ++i) {
-        for (int j = 0; j < img.cols; ++j) {
+    for (int i = 0; i < img.rows; i++) {
+        for (int j = 0; j < img.cols; j++) {
             Vec3d gx = gradX.at<Vec3d>(i, j);
             Vec3d gy = gradY.at<Vec3d>(i, j);
             Energy.at<double>(i, j) = sqrt(gx.dot(gx) + gy.dot(gy));
+        }
+    }
+    for (int i = 0; i < img.rows; i++) {
+        for (int j = 0; j < img.cols; j++) {
+            if (mask.at<uchar>(i, j) == 0) {
+                Energy.at<double>(i, j) = INF;
+            }
         }
     }
 
@@ -287,8 +284,10 @@ void Seam::insertHorizontal(Mat &img, Mat &mask, BoarderType BType) {
         for (int j = 0; j < img.cols; j++) {
             for (int i = img.rows - 1; i > horSeam[j].x; i--) {
                 img.at<Vec3b>(i, j) = img.at<Vec3b>(i - 1, j);
+                mask.at<uchar>(i, j) = mask.at<uchar>(i - 1, j);
             }
             if (horSeam[j].x > 0) {
+                mask.at<uchar>(horSeam[j].x, horSeam[j].y) = 1;
                 img.at<Vec3b>(horSeam[j].x, horSeam[j].y) += img.at<Vec3b>(horSeam[j].x - 1, horSeam[j].y);
                 img.at<Vec3b>(horSeam[j].x, horSeam[j].y) /= 2;
             }
@@ -298,8 +297,10 @@ void Seam::insertHorizontal(Mat &img, Mat &mask, BoarderType BType) {
         for (int j = 0; j < img.cols; j++) {
             for (int i = 0; i < horSeam[j].x; i++) {
                 img.at<Vec3b>(i, j) = img.at<Vec3b>(i + 1, j);
+                mask.at<uchar>(i, j) = mask.at<uchar>(i + 1, j);
             }
             if (horSeam[j].x < img.rows - 1) {
+                mask.at<uchar>(horSeam[j].x, horSeam[j].y) = 1;
                 img.at<Vec3b>(horSeam[j].x, horSeam[j].y) += img.at<Vec3b>(horSeam[j].x + 1, horSeam[j].y);
                 img.at<Vec3b>(horSeam[j].x, horSeam[j].y) /= 2;
             }
