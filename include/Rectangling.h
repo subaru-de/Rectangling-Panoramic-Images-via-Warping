@@ -18,10 +18,11 @@ class Rectangling {
 private:
     Mat &img;
     Mat mask;
+    vecctor<vector<Point>> disp; // 位移场
     Vec3b Corner;
 public:
     Rectangling(Mat &image);
-    void getRect(Rect &rect, DirectionType DType, CornerType CType, int seamLen);
+    void getRect(Rect &rect, DirectionType DType, CornerType CType, int seamLen, int seamEndp);
     void insertSeam();
     void showImg();
 };
@@ -32,6 +33,8 @@ img(image) {
     cout << "Size of the input image: " << img.size() << "\n";
     cout << img.rows << ' ' << img.cols << '\n';
     
+    // 初始化 mask，mask 应该在 insertSeam 之后更新
+    // 接下来需要保证找到的 seam 在 mask 之内
     mask.create(img.size(), CV_8UC1, Scalar(1));
     for (int i = 0; i < img.rows; i++) {
         for (int j = 0; j < img.cols; j++) {
@@ -63,35 +66,40 @@ img(image) {
             else break;
         }
     }
+    
+    // 初始化位移场
+    disp.resize(img.rows, vector<Point>(img.cols, {0, 0}));
 }
 
-void Rectangling::getRect(Rect &rect, DirectionType DType, CornerType CType, int seamLen) {
-    if (DType == Vertical) {
-        rect.x = 0;
+void Rectangling::getRect(Rect &rect, DirectionType DType, CornerType CType, int seamLen, int seamEndp) {
+    if (DType == Vertical) { // Vertical
         rect.width = img.cols;
         rect.height = seamLen;
-        if (CType == TopLeft || CType == TopRight) {
-            rect.y = 0;
+        // roi.x + roi.width <= m.cols
+        // roi.y + roi.height <= m.rows
+        if (CType == Left) {
+            
         }
-        else { // Bottom
-            rect.y = img.rows - seamLen;
+        else if (CType == Right) {
+
         }
     }
     else { // Horizontal
-        rect.y = 0;
         rect.width = seamLen;
         rect.height = img.rows;
-        if (CType == TopLeft || CType == BottomLeft) { // Left
-            rect.x = 0;
+        // roi.x + roi.width <= m.cols
+        // roi.y + roi.height <= m.rows
+        if (CType == Top) {
+
         }
-        else { // Right
-            rect.x = img.cols - seamLen;
+        else if (CType == Bottom) {
+
         }
     }
 }
 
 void Rectangling::insertSeam() {
-    int horLen = 0, verLen = 0;
+    int horLen = 0, verLen = 0, horEndp = 0, verEndp = 0;
     CornerType horType, verType;
     Seam seam(img);
     
@@ -99,105 +107,126 @@ void Rectangling::insertSeam() {
         showImg();
         printf("-------- loopCount: %d --------\n", loopCount);
         /* ------- Vertical --------*/
-        int flag[2] = {-1, -1};
+        int len[2] = {0, 0}, mx[2] = {0, 0}, endp[2] = {0, 0};
         for (int i = 0; i < img.rows; i++) {
-            if (flag[0] == i - 1 && img.at<Vec3b>(i, 0) == Corner) {
-                flag[0] = i;
+            if (mask.at<Vec3b>(i, 0) == 0) {
+                len[0]++;
             }
-            if (flag[1] == i - 1 && img.at<Vec3b>(i, img.cols - 1) == Corner) {
-                flag[1] = i;
+            else {
+                if (len[0] > mx[0]) {
+                    mx[0] = len[0];
+                    endp[0] = i - len[0];
+                }
+                len[0] = 0;
+            }
+            if (mask.at<Vec3b>(i, img.cols - 1) == 0) {
+                len[1]++;
+            }
+            else {
+                if (len[1] > mx[1]) {
+                    mx[1] = len[1];
+                    endp[1] = i - len[1];
+                }
+                len[1] = 0;
             }
         }
-        if (flag[0] >= flag[1]) {
-            verType = TopLeft;
-            verLen = flag[0];
+        // 考虑最后一段
+        if (len[0] > mx[0]) {
+            mx[0] = len[0];
+            endp[0] = img.rows - len[0];
+        }
+        len[0] = 0;
+        if (len[1] > mx[1]) {
+            mx[1] = len[1];
+            endp[1] = img.rows - len[1];
+        }
+        len[1] = 0;
+        // 更新最长段
+        if (mx[0] >= mx[1]) {
+            verType = Left;
+            verLen = mx[0];
+            verEndp = endp[0];
         }
         else {
-            verType = TopRight;
-            verLen = flag[1];
+            verType = Right;
+            verLen = mx[1];
+            verEndp = endp[1];
         }
         
-        flag[0] = flag[1] = img.rows;
-        for (int i = img.rows - 1; i >= 0; i--) {
-            if (flag[0] == i + 1 && img.at<Vec3b>(i, 0) == Corner) {
-                flag[0] = i;
-            }
-            if (flag[1] == i + 1 && img.at<Vec3b>(i, img.cols - 1) == Corner) {
-                flag[1] = i;
-            }
-        }
-        if (flag[0] <= flag[1] && img.rows - flag[0] > verLen) {
-            verType = BottomLeft;
-            verLen = img.rows - flag[0];
-        }
-        else if (img.rows - flag[1] > verLen) {
-            verType = BottomRight;
-            verLen = img.rows - flag[1];
-        }
-        verLen++;
-
         /* ------- Horizontal --------*/
-        flag[0] = flag[1] = -1;
+        len[0] = len[1] = mx[0] = mx[1] = endp[0] = endp[1] = 0;
         for (int j = 0; j < img.cols; j++) {
-            if (flag[0] == j - 1 && img.at<Vec3b>(0, j) == Corner) {
-                flag[0] = j;
+            if (mask.at<Vec3b>(0, j) == 0) {
+                len[0]++;
             }
-            if (flag[1] == j - 1 && img.at<Vec3b>(img.rows - 1, j) == Corner) {
-                flag[1] = j;
+            else {
+                if (len[0] > mx[0]) {
+                    mx[0] = len[0];
+                    endp[0] = i - len[0];
+                }
+                len[0] = 0;
+            }
+            if (mask.at<Vec3b>(img.rows - 1, j) == 0) {
+                len[1]++;
+            }
+            else {
+                if (len[1] > mx[1]) {
+                    mx[1] = len[1];
+                    endp[1] = i - len[1];
+                }
+                len[1] = 0;
             }
         }
-        if (flag[0] >= flag[1]) {
-            horType = TopLeft;
+        // 考虑最后一段
+        if (len[0] > mx[0]) {
+            mx[0] = len[0];
+            endp[0] = img.cols - len[0];
+        }
+        len[0] = 0;
+        if (len[1] > mx[1]) {
+            mx[1] = len[1];
+            endp[1] = img.cols - len[1];
+        }
+        len[1] = 0;
+        // 更新最长段
+        if (mx[0] >= mx[1]) {
+            horType = Top;
             horLen = flag[0];
+            horEndp = endp[0];
         }
         else {
             horType = BottomLeft;
             horLen = flag[1];
+            horEndp = endp[1];
         }
         
-        flag[0] = flag[1] = img.cols;
-        for (int j = img.cols - 1; j >= 0; j--) {
-            if (flag[0] == j + 1 && img.at<Vec3b>(0, j) == Corner) {
-                flag[0] = j;
-            }
-            if (flag[1] == j + 1 && img.at<Vec3b>(img.rows - 1, j) == Corner) {
-                flag[1] = j;
-            }
-        }
-        if (flag[0] <= flag[1] && img.cols - flag[0] > horLen) {
-            horType = TopRight;
-            horLen = img.cols - flag[0];
-        }
-        else if (img.cols - flag[1] > horLen) {
-            horType = BottomRight;
-            horLen = img.cols - flag[1];
-        }
-        horLen++;
-
-        printf("verLen: %d\t verType: %d\n", verLen, verType);
-        printf("horLen: %d\t horType: %d\n", horLen, horType);
+        printf("verLen: %d\t verType: %d\t verEndp: %d\n", verLen, verType, verEndp);
+        printf("horLen: %d\t horType: %d\t horEndp: %d\n", horLen, horType, horEndp);
 
         if (verLen == 0 && horLen == 0) break;
         /* -------- choose vertical or horizontal -------- */
         Rect rect;
         // roi.x + roi.width <= m.cols
         // roi.y + roi.height <= m.rows
-        Mat tmpImg;
+        Mat tmpImg, tmpMask;
         if (verLen >= horLen) { // Vertical
             // get rect
-            getRect(rect, Vertical, verType, verLen);
+            getRect(rect, Vertical, verType, verLen, verEndp);
             printf("V rect.x: %d\t rect.y: %d\t rect.width: %d\t rect.height: %d\n", rect.x, rect.y, rect.width, rect.height);
             tmpImg = img(rect);
+            tmpMask = mask(rect);
             seam.insertVertical(tmpImg, verType);
         }
         else { // Horizontal
             // get rect
-            getRect(rect, Horizontal, horType, horLen);
+            getRect(rect, Horizontal, horType, horLen, horEndp);
             printf("H rect.x: %d\t rect.y: %d\t rect.width: %d\t rect.height: %d\n", rect.x, rect.y, rect.width, rect.height);
             tmpImg = img(rect);
+            tmpMask = mask(rect);
             seam.insertHorizontal(tmpImg, horType);
         }
         img(rect) = tmpImg;
+        mask(rect) = tmpMask;
     }
 }
 
