@@ -9,7 +9,7 @@ using std::cout;
 using std::vector;
 using namespace cv;
 
-const double INF = 1e18;
+double INF = 1e8;
 enum BorderType {
     Top = 0,
     Bottom = 1,
@@ -120,11 +120,13 @@ void Seam::insertVertical(Mat &img, Mat &mask, BorderType BType) {
         insertChannel(gradYChannel(Rect(1, 1, img.cols, img.rows)), gradY, c);
     }
     // 计算能量
+    INF = 0;
     for (int i = 0; i < img.rows; i++) {
         for (int j = 0; j < img.cols; j++) {
             Vec3d gx = gradX.at<Vec3d>(i, j);
             Vec3d gy = gradY.at<Vec3d>(i, j);
             Energy.at<double>(i, j) = sqrt(gx.dot(gx) + gy.dot(gy));
+            INF = max(INF, Energy.at<double>(i, j));
         }
     }
     for (int i = 0; i < img.rows; i++) {
@@ -153,13 +155,18 @@ void Seam::insertVertical(Mat &img, Mat &mask, BorderType BType) {
                 M.at<double>(i, j) = M.at<double>(i - 1, j + 1);
                 from.at<int>(i, j) = j + 1;
             }
-            M.at<double>(i, j) += Energy.at<double>(i, j);
+            // if (M.at<double>(i, j) < INF || Energy.at<double>(i, j) < INF) {
+                M.at<double>(i, j) += Energy.at<double>(i, j);
+            // }
         }
     }
     /* -------- store seam -------- */
     vector<Point> verSeam(1, {img.rows - 1, 0});
     double mn = M.at<double>(img.rows - 1, 0);
     for (int j = 1; j < img.cols; j++) {
+        // if (M.at<double>(img.rows - 1, j) > INF) {
+        //     M.at<double>(img.rows - 1, j) -= INF;
+        // }
         if (M.at<double>(img.rows - 1, j) < mn) {
             mn = M.at<double>(img.rows - 1, j);
             verSeam[0] = {img.rows - 1, j};
@@ -181,10 +188,10 @@ void Seam::insertVertical(Mat &img, Mat &mask, BorderType BType) {
                 mask.at<uchar>(i, j) = mask.at<uchar>(i, j - 1);
             }
             if (verSeam[i].y > 0) {
-                // mask.at<uchar>(verSeam[i].x, verSeam[i].y) = 1;
-                // Vec3d tmp = (Vec3d)img.at<Vec3b>(verSeam[i].x, verSeam[i].y) + (Vec3d)img.at<Vec3b>(verSeam[i].x, verSeam[i].y - 1);
-                // img.at<Vec3b>(verSeam[i].x, verSeam[i].y) = tmp / 2;
-                img.at<Vec3b>(verSeam[i].x, verSeam[i].y) = Orange;
+                // mask.at<uchar>(verSeam[i].x, verSeam[i].y) = mask.at<uchar>(verSeam[i].x, verSeam[i].y - 1);
+                Vec3d tmp = (Vec3d)img.at<Vec3b>(verSeam[i].x, verSeam[i].y) + (Vec3d)img.at<Vec3b>(verSeam[i].x, verSeam[i].y - 1);
+                img.at<Vec3b>(verSeam[i].x, verSeam[i].y) = tmp / 2.0;
+                // img.at<Vec3b>(verSeam[i].x, verSeam[i].y) = Orange;
             }
         }
     }
@@ -196,10 +203,10 @@ void Seam::insertVertical(Mat &img, Mat &mask, BorderType BType) {
                 mask.at<uchar>(i, j) = mask.at<uchar>(i, j + 1);
             }
             if (verSeam[i].y < img.cols - 1) {
-                // mask.at<uchar>(verSeam[i].x, verSeam[i].y) = 1;
-                // Vec3d tmp = (Vec3d)img.at<Vec3b>(verSeam[i].x, verSeam[i].y) + (Vec3d)img.at<Vec3b>(verSeam[i].x, verSeam[i].y + 1);
-                // img.at<Vec3b>(verSeam[i].x, verSeam[i].y) = tmp / 2;
-                img.at<Vec3b>(verSeam[i].x, verSeam[i].y) = Orange;
+                // mask.at<uchar>(verSeam[i].x, verSeam[i].y) = mask.at<uchar>(verSeam[i].x, verSeam[i].y + 1);
+                Vec3d tmp = (Vec3d)img.at<Vec3b>(verSeam[i].x, verSeam[i].y) + (Vec3d)img.at<Vec3b>(verSeam[i].x, verSeam[i].y + 1);
+                img.at<Vec3b>(verSeam[i].x, verSeam[i].y) = tmp / 2.0;
+                // img.at<Vec3b>(verSeam[i].x, verSeam[i].y) = Orange;
             }
         }
     }
@@ -237,11 +244,13 @@ void Seam::insertHorizontal(Mat &img, Mat &mask, BorderType BType) {
         insertChannel(gradYChannel(Rect(1, 1, img.cols, img.rows)), gradY, c);
     }
     // 计算能量
+    INF = 0;
     for (int i = 0; i < img.rows; i++) {
         for (int j = 0; j < img.cols; j++) {
             Vec3d gx = gradX.at<Vec3d>(i, j);
             Vec3d gy = gradY.at<Vec3d>(i, j);
             Energy.at<double>(i, j) = sqrt(gx.dot(gx) + gy.dot(gy));
+            INF = max(INF, Energy.at<double>(i, j));
         }
     }
     for (int i = 0; i < img.rows; i++) {
@@ -270,13 +279,18 @@ void Seam::insertHorizontal(Mat &img, Mat &mask, BorderType BType) {
                 M.at<double>(i, j) = M.at<double>(i + 1, j - 1);
                 from.at<int>(i, j) = i + 1;
             }
-            M.at<double>(i, j) += Energy.at<double>(i, j);
+            // if (M.at<double>(i, j) < INF || Energy.at<double>(i, j) < INF) {
+                M.at<double>(i, j) += Energy.at<double>(i, j);
+            // }
         }
     }
     /* -------- get min and store seam -------- */
     vector<Point> horSeam(1, {0, img.cols - 1});
     double mn = M.at<double>(0, img.cols - 1);
     for (int i = 1; i < img.rows; i++) {
+        // if (M.at<double>(i, img.cols - 1) > INF) {
+        //     M.at<double>(i, img.cols - 1) -= INF;
+        // }
         if (M.at<double>(i, img.cols - 1) < mn) {
             mn = M.at<double>(i, img.cols - 1);
             horSeam[0] = {i, img.cols - 1};
@@ -298,10 +312,10 @@ void Seam::insertHorizontal(Mat &img, Mat &mask, BorderType BType) {
                 mask.at<uchar>(i, j) = mask.at<uchar>(i - 1, j);
             }
             if (horSeam[j].x > 0) {
-                // mask.at<uchar>(horSeam[j].x, horSeam[j].y) = 1;
-                // Vec3d tmp = (Vec3d)img.at<Vec3b>(horSeam[j].x, horSeam[j].y) + (Vec3d)img.at<Vec3b>(horSeam[j].x - 1, horSeam[j].y);
-                // img.at<Vec3b>(horSeam[j].x, horSeam[j].y) = tmp / 2.0;
-                img.at<Vec3b>(horSeam[j].x, horSeam[j].y) = Orange;
+                // mask.at<uchar>(horSeam[j].x, horSeam[j].y) = mask.at<uchar>(horSeam[j].x - 1, horSeam[j].y);
+                Vec3d tmp = (Vec3d)img.at<Vec3b>(horSeam[j].x, horSeam[j].y) + (Vec3d)img.at<Vec3b>(horSeam[j].x - 1, horSeam[j].y);
+                img.at<Vec3b>(horSeam[j].x, horSeam[j].y) = tmp / 2.0;
+                // img.at<Vec3b>(horSeam[j].x, horSeam[j].y) = Orange;
             }
         }
     }
@@ -313,10 +327,10 @@ void Seam::insertHorizontal(Mat &img, Mat &mask, BorderType BType) {
                 mask.at<uchar>(i, j) = mask.at<uchar>(i + 1, j);
             }
             if (horSeam[j].x < img.rows - 1) {
-                // mask.at<uchar>(horSeam[j].x, horSeam[j].y) = 1;
-                // Vec3d tmp = (Vec3d)img.at<Vec3b>(horSeam[j].x, horSeam[j].y) + (Vec3d)img.at<Vec3b>(horSeam[j].x + 1, horSeam[j].y);
-                // img.at<Vec3b>(horSeam[j].x, horSeam[j].y) = tmp / 2;
-                img.at<Vec3b>(horSeam[j].x, horSeam[j].y) = Orange;
+                // mask.at<uchar>(horSeam[j].x, horSeam[j].y) = mask.at<uchar>(horSeam[j].x + 1, horSeam[j].y);
+                Vec3d tmp = (Vec3d)img.at<Vec3b>(horSeam[j].x, horSeam[j].y) + (Vec3d)img.at<Vec3b>(horSeam[j].x + 1, horSeam[j].y);
+                img.at<Vec3b>(horSeam[j].x, horSeam[j].y) = tmp / 2.0;
+                // img.at<Vec3b>(horSeam[j].x, horSeam[j].y) = Orange;
             }
         }
     }
