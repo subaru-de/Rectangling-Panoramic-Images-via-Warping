@@ -81,6 +81,13 @@ Seam::Seam(const Mat &img) {
 void Seam::insertVertical(Mat &img, CornerType CType) {
     cout << "-------- insert vertical seam --------\n";
     cout << "sub-image size: " << img.size() << '\n';
+    // 保证找出的 seam 在 mask == 1 范围内
+    // 考虑如何实现这件事
+    // 论文中给出的方法是把 mask == 0 的像素的 cost 都设成 inf = 1e8，以此保证 seam 不经过它们
+    // 考虑是否一定存在一条不经过 mask == 0 的 seam
+    // 可以使用反证法
+    // 在讲 ppt 的时候可以讲一下这个证明
+    // 记得更新位移场 disp field
     Mat M, from;
     M.create(img.size(), CV_64FC1);
     from.create(img.size(), CV_32SC1);
