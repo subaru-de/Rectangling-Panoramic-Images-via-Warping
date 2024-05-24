@@ -11,8 +11,8 @@ using std::string;
 using std::vector;
 using namespace cv;
 
-const Vec3b Black = Vec3b(0, 0, 0);
-const Vec3b White = Vec3b(255, 255, 255);
+// const Vec3b Black = Vec3b(0, 0, 0);
+// const Vec3b White = Vec3b(255, 255, 255);
 
 enum DirectionType {
     Vertical = 0,
@@ -37,20 +37,34 @@ img(image) {
     Corner = image.at<Vec3b>(0);
     cout << "Size of the input image: " << img.size() << "\n";
     cout << img.rows << ' ' << img.cols << '\n';
+
+
+    /* -------- 有噪声 -------- */
+    // for (int j = 0; j < img.cols; j++) {
+    //     if (img.at<Vec3b>(0, j) != White) {
+    //         cout << j << ' ' << img.at<Vec3b>(0, j) << '\n';
+    //     }
+    // }
     
     // 初始化 mask，mask 应该在 insertSeam 之后更新
     // 接下来需要保证找到的 seam 在 mask 之内
+    /* -------- get mask -------- */
+    const double cornerEps = 300;
     mask.create(img.size(), CV_8UC1);
     mask.setTo(Scalar(1));
     for (int i = 0; i < img.rows; i++) {
         for (int j = 0; j < img.cols; j++) {
-            if (img.at<Vec3b>(i, j) == Corner) {
+            Vec3d de = img.at<Vec3b>(i, j);
+            de -= (Vec3d)Corner;
+            if (de.dot(de) < cornerEps) {
                 mask.at<uchar>(i, j) = 0;
             }
             else break;
         }
         for (int j = img.cols - 1; j >= 0; j--) {
-            if (img.at<Vec3b>(i, j) == Corner) {
+            Vec3d de = img.at<Vec3b>(i, j);
+            de -= (Vec3d)Corner;
+            if (de.dot(de) < cornerEps) {
                 mask.at<uchar>(i, j) = 0;
             }
             else break;
@@ -58,15 +72,21 @@ img(image) {
     }
     for (int j = 0; j < img.cols; j++) {
         for (int i = 0; i < img.rows; i++) {
-            if (mask.at<uchar>(i, j) == 0) break;
-            else if (img.at<Vec3b>(i, j) == Corner) {
+            // if (mask.at<uchar>(i, j) == 0) break;
+            // else
+            Vec3d de = img.at<Vec3b>(i, j);
+            de -= (Vec3d)Corner;
+            if (de.dot(de) < cornerEps) {
                 mask.at<uchar>(i, j) = 0;
             }
             else break;
         }
         for (int i = img.rows - 1; i >= 0; i--) {
-            if (mask.at<uchar>(i, j) == 0) break;
-            else if (img.at<Vec3b>(i, j) == Corner) {
+            // if (mask.at<uchar>(i, j) == 0) break;
+            // else
+            Vec3d de = img.at<Vec3b>(i, j);
+            de -= (Vec3d)Corner;
+            if (de.dot(de) < cornerEps) {
                 mask.at<uchar>(i, j) = 0;
             }
             else break;
