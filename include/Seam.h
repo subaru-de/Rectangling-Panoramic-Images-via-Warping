@@ -132,6 +132,9 @@ void Seam::insertVertical(Mat &img, Mat &mask, BorderType BType) {
     for (int i = 0; i < img.rows; i++) {
         for (int j = 0; j < img.cols; j++) {
             if (mask.at<uchar>(i, j) == 0) {
+                Energy.at<double>(i, j) = 1e8;
+            }
+            else if (mask.at<uchar>(i, j) == 2) {
                 Energy.at<double>(i, j) = INF;
             }
         }
@@ -187,8 +190,12 @@ void Seam::insertVertical(Mat &img, Mat &mask, BorderType BType) {
                 img.at<Vec3b>(i, j) = img.at<Vec3b>(i, j - 1);
                 mask.at<uchar>(i, j) = mask.at<uchar>(i, j - 1);
             }
+            if (verSeam[i].y + 1 < img.cols && mask.at<uchar>(verSeam[i].x, verSeam[i].y + 1)) {
+                mask.at<uchar>(verSeam[i].x, verSeam[i].y + 1) = 2;
+            }
             if (verSeam[i].y > 0) {
-                // mask.at<uchar>(verSeam[i].x, verSeam[i].y) = mask.at<uchar>(verSeam[i].x, verSeam[i].y - 1);
+                if (mask.at<uchar>(verSeam[i].x, verSeam[i].y)) mask.at<uchar>(verSeam[i].x, verSeam[i].y) = 2;
+                if (mask.at<uchar>(verSeam[i].x, verSeam[i].y - 1)) mask.at<uchar>(verSeam[i].x, verSeam[i].y - 1) = 2;
                 Vec3d tmp = (Vec3d)img.at<Vec3b>(verSeam[i].x, verSeam[i].y) + (Vec3d)img.at<Vec3b>(verSeam[i].x, verSeam[i].y - 1);
                 img.at<Vec3b>(verSeam[i].x, verSeam[i].y) = tmp / 2.0;
                 // img.at<Vec3b>(verSeam[i].x, verSeam[i].y) = Orange;
@@ -202,8 +209,12 @@ void Seam::insertVertical(Mat &img, Mat &mask, BorderType BType) {
                 img.at<Vec3b>(i, j) = img.at<Vec3b>(i, j + 1);
                 mask.at<uchar>(i, j) = mask.at<uchar>(i, j + 1);
             }
+            if (verSeam[i].y > 0 && mask.at<uchar>(verSeam[i].x, verSeam[i].y - 1)) {
+                mask.at<uchar>(verSeam[i].x, verSeam[i].y - 1) = 2;
+            }
             if (verSeam[i].y < img.cols - 1) {
-                // mask.at<uchar>(verSeam[i].x, verSeam[i].y) = mask.at<uchar>(verSeam[i].x, verSeam[i].y + 1);
+                if (mask.at<uchar>(verSeam[i].x, verSeam[i].y)) mask.at<uchar>(verSeam[i].x, verSeam[i].y) = 2;
+                if (mask.at<uchar>(verSeam[i].x, verSeam[i].y + 1)) mask.at<uchar>(verSeam[i].x, verSeam[i].y + 1) = 2;
                 Vec3d tmp = (Vec3d)img.at<Vec3b>(verSeam[i].x, verSeam[i].y) + (Vec3d)img.at<Vec3b>(verSeam[i].x, verSeam[i].y + 1);
                 img.at<Vec3b>(verSeam[i].x, verSeam[i].y) = tmp / 2.0;
                 // img.at<Vec3b>(verSeam[i].x, verSeam[i].y) = Orange;
@@ -256,6 +267,9 @@ void Seam::insertHorizontal(Mat &img, Mat &mask, BorderType BType) {
     for (int i = 0; i < img.rows; i++) {
         for (int j = 0; j < img.cols; j++) {
             if (mask.at<uchar>(i, j) == 0) {
+                Energy.at<double>(i, j) = 1e8;
+            }
+            else if (mask.at<uchar>(i, j) == 2) {
                 Energy.at<double>(i, j) = INF;
             }
         }
@@ -311,8 +325,12 @@ void Seam::insertHorizontal(Mat &img, Mat &mask, BorderType BType) {
                 img.at<Vec3b>(i, j) = img.at<Vec3b>(i - 1, j);
                 mask.at<uchar>(i, j) = mask.at<uchar>(i - 1, j);
             }
+            if (horSeam[j].x + 1 < img.rows && mask.at<uchar>(horSeam[j].x + 1, horSeam[j].y)) {
+                mask.at<uchar>(horSeam[j].x + 1, horSeam[j].y) = 2;
+            }
             if (horSeam[j].x > 0) {
-                // mask.at<uchar>(horSeam[j].x, horSeam[j].y) = mask.at<uchar>(horSeam[j].x - 1, horSeam[j].y);
+                if (mask.at<uchar>(horSeam[j].x, horSeam[j].y)) mask.at<uchar>(horSeam[j].x, horSeam[j].y) = 2;
+                if (mask.at<uchar>(horSeam[j].x - 1, horSeam[j].y)) mask.at<uchar>(horSeam[j].x - 1, horSeam[j].y) = 2;
                 Vec3d tmp = (Vec3d)img.at<Vec3b>(horSeam[j].x, horSeam[j].y) + (Vec3d)img.at<Vec3b>(horSeam[j].x - 1, horSeam[j].y);
                 img.at<Vec3b>(horSeam[j].x, horSeam[j].y) = tmp / 2.0;
                 // img.at<Vec3b>(horSeam[j].x, horSeam[j].y) = Orange;
@@ -326,8 +344,12 @@ void Seam::insertHorizontal(Mat &img, Mat &mask, BorderType BType) {
                 img.at<Vec3b>(i, j) = img.at<Vec3b>(i + 1, j);
                 mask.at<uchar>(i, j) = mask.at<uchar>(i + 1, j);
             }
+            if (horSeam[j].x > 0 && mask.at<uchar>(horSeam[j].x - 1, horSeam[j].y)) {
+                mask.at<uchar>(horSeam[j].x - 1, horSeam[j].y) = 2;
+            }
             if (horSeam[j].x < img.rows - 1) {
-                // mask.at<uchar>(horSeam[j].x, horSeam[j].y) = mask.at<uchar>(horSeam[j].x + 1, horSeam[j].y);
+                if (mask.at<uchar>(horSeam[j].x, horSeam[j].y)) mask.at<uchar>(horSeam[j].x, horSeam[j].y) = 2;
+                if (mask.at<uchar>(horSeam[j].x + 1, horSeam[j].y)) mask.at<uchar>(horSeam[j].x + 1, horSeam[j].y) = 2;
                 Vec3d tmp = (Vec3d)img.at<Vec3b>(horSeam[j].x, horSeam[j].y) + (Vec3d)img.at<Vec3b>(horSeam[j].x + 1, horSeam[j].y);
                 img.at<Vec3b>(horSeam[j].x, horSeam[j].y) = tmp / 2.0;
                 // img.at<Vec3b>(horSeam[j].x, horSeam[j].y) = Orange;
