@@ -23,6 +23,7 @@ enum DirectionType {
 class Rectangling {
 private:
     Mat &img;
+    Mat img_bak;
     Mat mask;
     // x 对应的是 width，y 对应的是 height
     Mat dispV, dispH; // 位移场
@@ -124,6 +125,7 @@ void Rectangling::init() {
 
 Rectangling::Rectangling(Mat &image):
 img(image) {
+    img.copyTo(img_bak);
     init();
     showImg();
     insertSeam();
@@ -131,6 +133,9 @@ img(image) {
     writeImg("../img/out2.jpg");
     showSeam();
     Mesh mesh(img);
+    showMesh(mesh);
+    img_bak.copyTo(img);
+    mesh.displace(dispV, dispH);
     showMesh(mesh);
 }
 
@@ -317,17 +322,7 @@ void Rectangling::showSeam() {
 void Rectangling::showMesh(Mesh &mesh) {
     Mat res;
     img.copyTo(res);
-    // add mesh
-    for (int i = 0; i < mesh.ver.size(); i++) {
-        for (int j = 0; j < mesh.ver[i].size(); j++) {
-            if (i) {
-                line(res, mesh.ver[i][j], mesh.ver[i - 1][j], Green, 2);
-            }
-            if (j) {
-                line(res, mesh.ver[i][j], mesh.ver[i][j - 1], Green, 2);
-            }
-        }
-    }
+    mesh.putMesh(res);
     imshow("Image with Mesh", res);
     waitKey(0);
     imwrite("../img/img_with_mesh.jpg", res);

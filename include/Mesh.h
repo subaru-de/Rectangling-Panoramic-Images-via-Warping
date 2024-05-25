@@ -7,9 +7,11 @@
 
 class Mesh {
 private:
+    vector<vector<Point>> ver;
 public:
-    vector<vector<Point2d>> ver;
     Mesh(Mat &img);
+    void putMesh(Mat &img);
+    void displace(Mat &dispV, Mat &dispH);
 };
 
 Mesh::Mesh(Mat &img) {
@@ -26,7 +28,7 @@ Mesh::Mesh(Mat &img) {
     // 加上 i == 0 || j == 0
     totVerR++;
     totVerC++;
-    ver.resize(totVerR, vector<Point2d>(totVerC, {0, 0}));
+    ver.resize(totVerR, vector<Point>(totVerC, {0, 0}));
 
     cout << totVerR << ' ' << totVerC << ' ' << disR << ' ' << disC << '\n';
 
@@ -36,7 +38,7 @@ Mesh::Mesh(Mat &img) {
         for (int i = 0; i < totVerR; i++, x += disR) {
             y = 0;
             for (int j = 0; j < totVerC; j++, y += disC) {
-                ver[i][j] = Point2d(y, x);
+                ver[i][j] = Point(y + 0.5, x + 0.5);
             }
         }
     }
@@ -44,6 +46,34 @@ Mesh::Mesh(Mat &img) {
     for (int i = 0; i < ver.size(); i++) {
         for (int j = 0; j < ver[i].size(); j++) {
             cout << ver[i][j] << '\t';
+        }
+        cout << '\n';
+    }
+}
+
+void Mesh::putMesh(Mat &img) {
+    // put mesh
+    for (int i = 0; i < ver.size(); i++) {
+        for (int j = 0; j < ver[i].size(); j++) {
+            if (i) {
+                line(img, ver[i][j], ver[i - 1][j], Green, 1);
+            }
+            if (j) {
+                line(img, ver[i][j], ver[i][j - 1], Green, 1);
+            }
+        }
+    }
+}
+
+void Mesh::displace(Mat &dispV, Mat &dispH) {
+    for (int i = 0; i < ver.size(); i++) {
+        for (int j = 0; j < ver[i].size(); j++) {
+            // x 对应 width
+            Point de = {0, 0};
+            de.x += dispV.at<int>(ver[i][j]);
+            de.y += dispH.at<int>(ver[i][j]);
+            ver[i][j] -= de;
+            cout << ver[i][j] << ' ';
         }
         cout << '\n';
     }
