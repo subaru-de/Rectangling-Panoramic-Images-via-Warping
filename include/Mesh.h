@@ -7,7 +7,7 @@
 
 class Mesh {
 private:
-    vector<vector<Point>> ver;
+    vector<vector<Point>> ver, nver;
 public:
     Mesh(Mat &img);
     void putMesh(Mat &img);
@@ -40,6 +40,7 @@ Mesh::Mesh(Mat &img) {
             y = 0;
             for (int j = 0; j < totVerC; j++, y += disC) {
                 ver[i][j] = Point(y, x);
+                nver[i][j] = ver[i][j];
             }
         }
     }
