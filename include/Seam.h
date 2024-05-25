@@ -84,7 +84,7 @@ Seam::Seam(const Mat &img) {
     // !!! check if E is right.
 }
 
-void Seam::insertVertical(Mat &img, Mat &mask, BorderType BType) {
+void Seam::insertVertical(Mat &img, Mat &mask, Mat &dispV, BorderType BType) {
     cout << "-------- insert vertical seam --------\n";
     cout << "sub-image size: " << img.size() << '\n';
     // 保证找出的 seam 在 mask == 1 范围内
@@ -223,7 +223,7 @@ void Seam::insertVertical(Mat &img, Mat &mask, BorderType BType) {
     }
 }
 
-void Seam::insertHorizontal(Mat &img, Mat &mask, BorderType BType) {
+void Seam::insertHorizontal(Mat &img, Mat &mask, Mat &dispH, BorderType BType) {
     cout << "-------- insert horizontal seam --------\n";
     
     /* -------- Find Horizontal Seam -------- */

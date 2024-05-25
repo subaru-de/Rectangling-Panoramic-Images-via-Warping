@@ -23,7 +23,8 @@ class Rectangling {
 private:
     Mat &img;
     Mat mask;
-    vector<vector<Point>> disp; // 位移场
+    // x 对应的是 width，y 对应的是 height
+    Mat dispV, dispH; // 位移场
     Vec3b Corner;
 public:
     Rectangling(Mat &image);
@@ -106,7 +107,10 @@ img(image) {
     waitKey(0);
     
     // 初始化位移场
-    disp.resize(img.rows, vector<Point>(img.cols, {0, 0}));
+    dispV.create(img.size(), CV_32SC1);
+    dispH.create(img.size(), CV_32SC1);
+    dispV.setTo(Scalar(0));
+    dispH.setTo(Scalar(0));
 }
 
 void Rectangling::getRect(Rect &rect, DirectionType DType, BorderType BType, int seamLen, int seamEndp) {
@@ -238,14 +242,16 @@ void Rectangling::insertSeam() {
         Rect rect;
         // roi.x + roi.width <= m.cols
         // roi.y + roi.height <= m.rows
-        Mat tmpImg, tmpMask;
+        Mat tmpImg, tmpMask, tmpDispV, tmpDispH;
         if (verLen >= horLen) { // Vertical
             // get rect
             getRect(rect, Vertical, verType, verLen, verEndp);
             printf("V rect.x: %d\t rect.y: %d\t rect.width: %d\t rect.height: %d\n", rect.x, rect.y, rect.width, rect.height);
             tmpImg = img(rect);
             tmpMask = mask(rect);
-            seam.insertVertical(tmpImg, tmpMask, verType);
+            tmpDispV = dispV(rect);
+            seam.insertVertical(tmpImg, tmpMask, tmpDispV, verType);
+            dispV(rect) = tmpDispV;
         }
         else { // Horizontal
             // get rect
@@ -253,7 +259,9 @@ void Rectangling::insertSeam() {
             printf("H rect.x: %d\t rect.y: %d\t rect.width: %d\t rect.height: %d\n", rect.x, rect.y, rect.width, rect.height);
             tmpImg = img(rect);
             tmpMask = mask(rect);
-            seam.insertHorizontal(tmpImg, tmpMask, horType);
+            tmpDispH = dispH(rect);
+            seam.insertHorizontal(tmpImg, tmpMask, tmpDispH, horType);
+            dispH(rect) = tmpDispH;
         }
         img(rect) = tmpImg;
         mask(rect) = tmpMask;
