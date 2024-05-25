@@ -20,6 +20,7 @@ enum BorderType {
 const Vec3b Black = Vec3b(0, 0, 0);
 const Vec3b White = Vec3b(255, 255, 255);
 const Vec3b Orange = Vec3b(0, 165, 255);
+const Vec3b Green = Vec3b(0, 255, 0);
 
 class Seam {
 private:

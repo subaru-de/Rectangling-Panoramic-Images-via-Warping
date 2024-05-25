@@ -30,6 +30,7 @@ private:
     Mat litSeam; // 高亮 seam 的位置的图片
 public:
     Rectangling(Mat &image);
+    void init();
     void getRect(Rect &rect, DirectionType DType, BorderType BType, int seamLen, int seamEndp);
     void insertSeam();
     void showImg();
@@ -38,8 +39,7 @@ public:
     void showMesh();
 };
 
-Rectangling::Rectangling(Mat &image):
-img(image) {
+void Rectangling::init() {
     Corner = image.at<Vec3b>(0);
     cout << "Size of the input image: " << img.size() << "\n";
     cout << img.rows << ' ' << img.cols << '\n';
@@ -120,6 +120,18 @@ img(image) {
     // 初始化 litSeam
     litSeam.create(img.size(), CV_8UC3);
     litSeam.setTo(White);
+}
+
+Rectangling::Rectangling(Mat &image):
+img(image) {
+    init();
+    showImg();
+    insertSeam();
+    showImg();
+    writeImg("../img/out55.jpg");
+    showSeam();
+    Mesh mesh(img);
+    showMesh(mesh);
 }
 
 void Rectangling::getRect(Rect &rect, DirectionType DType, BorderType BType, int seamLen, int seamEndp) {
@@ -298,14 +310,27 @@ void Rectangling::showSeam() {
         }
     }
     imshow("Image with Seam", res);
-    imwrite("../img/img_with_seam.jpg", res);
     waitKey(0);
+    imwrite("../img/img_with_seam.jpg", res);
 }
 
-void Rectangling::showMesh() {
+void Rectangling::showMesh(Mesh &mesh) {
     Mat res;
     img.copyTp(res);
     // add mesh
+    for (int i = 0; i < mesh.size(); i++) {
+        for (int j = 0; j < mesh[i].size(); j++) {
+            if (i) {
+                line(res, vec[i][j], vec[i - 1][j], Green, 2);
+            }
+            if (j) {
+                line(res, vec[i][j], vec[i][j - 1], Green, 2);
+            }
+        }
+    }
+    imshow("Image with Mesh", res);
+    waitKey(0);
+    imwrite("../img/img_with_mesh.jpg", res);
 }
 
 void Rectangling::writeImg(string filename) {

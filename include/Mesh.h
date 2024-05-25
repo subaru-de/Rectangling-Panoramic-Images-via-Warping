@@ -18,9 +18,10 @@ Mesh::Mesh(Mat &img) {
     
     // (x / scale) * (y / scale) = totVer
     int totVerR = img.rows / scale;
-    if (!totVerR) totVerR++;
     int totVerC = img.cols / scale;
-    if (!totVerC) totVerC++;
+    // 加上 i == 0 || j == 0
+    totVerR++;
+    totVerC++;
     ver.resize(totVerR, vector<Point2d>(totVerC, {0, 0}));
 
     double disR = 1.0 * img.rows / (totVerR + 1.0);
@@ -28,10 +29,10 @@ Mesh::Mesh(Mat &img) {
 
     
     /* -------- 防止 x, y 重名 -------- */ {
-        double x = disR, y = disC;
-        for (int i = 1; i <= totVerR; i++, x += disR) {
-            for (int j = 1; j <= totVerC; j++, y += disC) {
-                ver[i][j] = Point2d(x, y);
+        double x = 0, y = 0;
+        for (int i = 0; i <= totVerR; i++, x += disR) {
+            for (int j = 0; j <= totVerC; j++, y += disC) {
+                ver[i][j] = Point2d(y, x);
             }
         }
     }
