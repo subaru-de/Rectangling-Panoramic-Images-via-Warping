@@ -85,7 +85,7 @@ Seam::Seam(const Mat &img) {
     // !!! check if E is right.
 }
 
-void Seam::insertVertical(Mat &img, Mat &mask, Mat &dispV, Mat &litSeam, BorderType BType) { 
+void Seam::insertVertical(Mat &img, Mat &mask, Mat &dispV, Mat &litSeam, BorderType BType) {
     // cout << "-------- insert vertical seam --------\n";
     // cout << "sub-image size: " << img.size() << '\n';
     // 保证找出的 seam 在 mask == 1 范围内
@@ -176,7 +176,7 @@ void Seam::insertVertical(Mat &img, Mat &mask, Mat &dispV, Mat &litSeam, BorderT
             verSeam[0] = {img.rows - 1, j};
         }
     }
-    cout << "minM: " << mn << '\n';
+    // cout << "minM: " << mn << '\n';
     for (; verSeam.back().x > 0; ) {
         int &pre = from.at<int>(verSeam.back().x, verSeam.back().y);
         verSeam.push_back({verSeam.back().x - 1, pre});
@@ -315,7 +315,7 @@ void Seam::insertHorizontal(Mat &img, Mat &mask, Mat &dispH, Mat &litSeam, Borde
             horSeam[0] = {i, img.cols - 1};
         }
     }
-    cout << "minM: " << mn << '\n';
+    // cout << "minM: " << mn << '\n';
     for (; horSeam.back().y > 0; ) {
         int &pre = from.at<int>(horSeam.back().x, horSeam.back().y);
         horSeam.push_back({pre, horSeam.back().y - 1});

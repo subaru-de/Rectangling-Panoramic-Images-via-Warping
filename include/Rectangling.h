@@ -36,11 +36,11 @@ public:
     void showImg();
     void writeImg(string filename);
     void showSeam();
-    void showMesh();
+    void showMesh(Mesh &mesh);
 };
 
 void Rectangling::init() {
-    Corner = image.at<Vec3b>(0);
+    Corner = img.at<Vec3b>(0);
     cout << "Size of the input image: " << img.size() << "\n";
     cout << img.rows << ' ' << img.cols << '\n';
 
@@ -128,7 +128,7 @@ img(image) {
     showImg();
     insertSeam();
     showImg();
-    writeImg("../img/out55.jpg");
+    writeImg("../img/out2.jpg");
     showSeam();
     Mesh mesh(img);
     showMesh(mesh);
@@ -316,15 +316,15 @@ void Rectangling::showSeam() {
 
 void Rectangling::showMesh(Mesh &mesh) {
     Mat res;
-    img.copyTp(res);
+    img.copyTo(res);
     // add mesh
-    for (int i = 0; i < mesh.size(); i++) {
-        for (int j = 0; j < mesh[i].size(); j++) {
+    for (int i = 0; i < mesh.ver.size(); i++) {
+        for (int j = 0; j < mesh.ver[i].size(); j++) {
             if (i) {
-                line(res, vec[i][j], vec[i - 1][j], Green, 2);
+                line(res, mesh.ver[i][j], mesh.ver[i - 1][j], Green, 2);
             }
             if (j) {
-                line(res, vec[i][j], vec[i][j - 1], Green, 2);
+                line(res, mesh.ver[i][j], mesh.ver[i][j - 1], Green, 2);
             }
         }
     }
