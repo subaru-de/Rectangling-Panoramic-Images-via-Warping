@@ -7,3 +7,5 @@ target_include_directories(
     glad PUBLIC 
     "include/"
 )
+
+SET(CMAKE_BUILD_TYPE "Release")

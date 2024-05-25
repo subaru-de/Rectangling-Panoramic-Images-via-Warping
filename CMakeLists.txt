@@ -13,4 +13,4 @@ add_subdirectory(glad)
 target_link_libraries(Rectangling glad)
 
 
-# SET(CMAKE_BUILD_TYPE "Release")
+SET(CMAKE_BUILD_TYPE "Release")

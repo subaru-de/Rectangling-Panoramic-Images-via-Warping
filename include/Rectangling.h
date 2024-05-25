@@ -35,6 +35,7 @@ public:
     void showImg();
     void writeImg(string filename);
     void showSeam();
+    void showMesh();
 };
 
 Rectangling::Rectangling(Mat &image):
@@ -54,7 +55,7 @@ img(image) {
     // 初始化 mask，mask 应该在 insertSeam 之后更新
     // 接下来需要保证找到的 seam 在 mask 之内
     /* -------- get mask -------- */
-    const double cornerEps = 500;
+    const double cornerEps = 300;
     mask.create(img.size(), CV_8UC1);
     mask.setTo(Scalar(1));
     for (int i = 0; i < img.rows; i++) {
@@ -289,9 +290,22 @@ void Rectangling::showImg() {
 void Rectangling::showSeam() {
     Mat res;
     img.copyTo(res);
-    addWeighted(litSeam, 0.5, res, 1, 0.0, res);
-    imshow("Image with Seam", img);
+    for (int i = 0; i < img.rows; i++) {
+        for (int j = 0; j < img.cols; j++) {
+            if (litSeam.at<Vec3b>(i, j) != White) {
+                res.at<Vec3b>(i, j) = litSeam.at<Vec3b>(i, j);
+            }
+        }
+    }
+    imshow("Image with Seam", res);
+    imwrite("../img/img_with_seam.jpg", res);
     waitKey(0);
+}
+
+void Rectangling::showMesh() {
+    Mat res;
+    img.copyTp(res);
+    // add mesh
 }
 
 void Rectangling::writeImg(string filename) {
