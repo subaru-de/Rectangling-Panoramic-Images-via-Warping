@@ -22,8 +22,9 @@ Mesh::Mesh(Mat &img) {
     int totVerR = img.rows / scale;
     int totVerC = img.cols / scale;
 
-    double disR = 1.0 * img.rows / totVerR;
-    double disC = 1.0 * img.cols / totVerC;
+    // 保证最后一行最后一列不出界，所以要减一
+    double disR = 1.0 * (img.rows - 1.0) / totVerR;
+    double disC = 1.0 * (img.cols - 1.0) / totVerC;
 
     // 加上 i == 0 || j == 0
     totVerR++;
@@ -38,17 +39,17 @@ Mesh::Mesh(Mat &img) {
         for (int i = 0; i < totVerR; i++, x += disR) {
             y = 0;
             for (int j = 0; j < totVerC; j++, y += disC) {
-                ver[i][j] = Point(y + 0.5, x + 0.5);
+                ver[i][j] = Point(y, x);
             }
         }
     }
 
-    for (int i = 0; i < ver.size(); i++) {
-        for (int j = 0; j < ver[i].size(); j++) {
-            cout << ver[i][j] << '\t';
-        }
-        cout << '\n';
-    }
+    // for (int i = 0; i < ver.size(); i++) {
+    //     for (int j = 0; j < ver[i].size(); j++) {
+    //         cout << ver[i][j] << '\t';
+    //     }
+    //     cout << '\n';
+    // }
 }
 
 void Mesh::putMesh(Mat &img) {
@@ -72,8 +73,8 @@ void Mesh::displace(Mat &dispV, Mat &dispH) {
             Point de = {0, 0};
             de.x += dispV.at<int>(ver[i][j]);
             de.y += dispH.at<int>(ver[i][j]);
-            ver[i][j] -= de;
-            cout << ver[i][j] << ' ';
+            ver[i][j] += de;
+            // cout << de << ' ' << ver[i][j] << ' ';
         }
         cout << '\n';
     }

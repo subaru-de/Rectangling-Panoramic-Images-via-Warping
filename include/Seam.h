@@ -190,6 +190,7 @@ void Seam::insertVertical(Mat &img, Mat &mask, Mat &dispV, Mat &litSeam, BorderT
                 // if (!mask.at<uchar>(i, j - 1)) continue;
                 img.at<Vec3b>(i, j) = img.at<Vec3b>(i, j - 1);
                 mask.at<uchar>(i, j) = mask.at<uchar>(i, j - 1);
+                dispV.at<int>(i, j) = dispV.at<int>(i, j - 1);
                 dispV.at<int>(i, j)--;
             }
             litSeam.at<Vec3b>(verSeam[i].x, verSeam[i].y) = Orange;
@@ -211,6 +212,7 @@ void Seam::insertVertical(Mat &img, Mat &mask, Mat &dispV, Mat &litSeam, BorderT
                 // if (!mask.at<uchar>(i, j + 1)) continue;
                 img.at<Vec3b>(i, j) = img.at<Vec3b>(i, j + 1);
                 mask.at<uchar>(i, j) = mask.at<uchar>(i, j + 1);
+                dispV.at<int>(i, j) = dispV.at<int>(i, j + 1);
                 dispV.at<int>(i, j)++;
             }
             litSeam.at<Vec3b>(verSeam[i].x, verSeam[i].y) = Orange;
@@ -329,6 +331,7 @@ void Seam::insertHorizontal(Mat &img, Mat &mask, Mat &dispH, Mat &litSeam, Borde
                 // if (!mask.at<uchar>(i - 1, j)) continue;
                 img.at<Vec3b>(i, j) = img.at<Vec3b>(i - 1, j);
                 mask.at<uchar>(i, j) = mask.at<uchar>(i - 1, j);
+                dispH.at<int>(i, j) = dispH.at<int>(i - 1, j);
                 dispH.at<int>(i, j)--;
             }
             litSeam.at<Vec3b>(horSeam[j].x, horSeam[j].y) = Orange;
@@ -350,6 +353,7 @@ void Seam::insertHorizontal(Mat &img, Mat &mask, Mat &dispH, Mat &litSeam, Borde
                 // if (!mask.at<uchar>(i + 1, j)) continue;
                 img.at<Vec3b>(i, j) = img.at<Vec3b>(i + 1, j);
                 mask.at<uchar>(i, j) = mask.at<uchar>(i + 1, j);
+                dispH.at<int>(i, j) = dispH.at<int>(i + 1, j);
                 dispH.at<int>(i, j)++;
             }
             litSeam.at<Vec3b>(horSeam[j].x, horSeam[j].y) = Orange;
