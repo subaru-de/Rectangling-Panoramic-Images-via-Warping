@@ -5,6 +5,7 @@
 #include <GLFW/glfw3.h>
 #include <opencv2/opencv.hpp>
 #include <Seam.h>
+#include <Mesh.h>
 
 using std::cout;
 using std::string;
@@ -26,11 +27,14 @@ private:
     // x 对应的是 width，y 对应的是 height
     Mat dispV, dispH; // 位移场
     Vec3b Corner;
+    Mat litSeam; // 高亮 seam 的位置的图片
 public:
     Rectangling(Mat &image);
     void getRect(Rect &rect, DirectionType DType, BorderType BType, int seamLen, int seamEndp);
     void insertSeam();
     void showImg();
+    void writeImg(string filename);
+    void showSeam();
 };
 
 Rectangling::Rectangling(Mat &image):
@@ -50,7 +54,7 @@ img(image) {
     // 初始化 mask，mask 应该在 insertSeam 之后更新
     // 接下来需要保证找到的 seam 在 mask 之内
     /* -------- get mask -------- */
-    const double cornerEps = 300;
+    const double cornerEps = 500;
     mask.create(img.size(), CV_8UC1);
     mask.setTo(Scalar(1));
     for (int i = 0; i < img.rows; i++) {
@@ -111,6 +115,10 @@ img(image) {
     dispH.create(img.size(), CV_32SC1);
     dispV.setTo(Scalar(0));
     dispH.setTo(Scalar(0));
+
+    // 初始化 litSeam
+    litSeam.create(img.size(), CV_8UC3);
+    litSeam.setTo(White);
 }
 
 void Rectangling::getRect(Rect &rect, DirectionType DType, BorderType BType, int seamLen, int seamEndp) {
@@ -242,7 +250,7 @@ void Rectangling::insertSeam() {
         Rect rect;
         // roi.x + roi.width <= m.cols
         // roi.y + roi.height <= m.rows
-        Mat tmpImg, tmpMask, tmpDispV, tmpDispH;
+        Mat tmpImg, tmpMask, tmpDispV, tmpDispH, tmpLitSeam;
         if (verLen >= horLen) { // Vertical
             // get rect
             getRect(rect, Vertical, verType, verLen, verEndp);
@@ -250,7 +258,8 @@ void Rectangling::insertSeam() {
             tmpImg = img(rect);
             tmpMask = mask(rect);
             tmpDispV = dispV(rect);
-            seam.insertVertical(tmpImg, tmpMask, tmpDispV, verType);
+            tmpLitSeam = litSeam(rect);
+            seam.insertVertical(tmpImg, tmpMask, tmpDispV, tmpLitSeam, verType);
             dispV(rect) = tmpDispV;
         }
         else { // Horizontal
@@ -260,17 +269,31 @@ void Rectangling::insertSeam() {
             tmpImg = img(rect);
             tmpMask = mask(rect);
             tmpDispH = dispH(rect);
-            seam.insertHorizontal(tmpImg, tmpMask, tmpDispH, horType);
+            tmpLitSeam = litSeam(rect);
+            seam.insertHorizontal(tmpImg, tmpMask, tmpDispH, tmpLitSeam, horType);
             dispH(rect) = tmpDispH;
         }
         img(rect) = tmpImg;
         mask(rect) = tmpMask;
+        litSeam(rect) = tmpLitSeam;
     }
-    showImg();
+    // showImg();
 }
 
 void Rectangling::showImg() {
     // cout << "qwqwq " << img.size() << '\n';
     imshow("Image after seam carving", img);
     waitKey(0);
+}
+
+void Rectangling::showSeam() {
+    Mat res;
+    img.copyTo(res);
+    addWeighted(litSeam, 0.5, res, 1, 0.0, res);
+    imshow("Image with Seam", img);
+    waitKey(0);
+}
+
+void Rectangling::writeImg(string filename) {
+    imwrite(filename, img);
 }

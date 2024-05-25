@@ -25,5 +25,7 @@ int main(int argc, char** argv) {
     rc.showImg();
     rc.insertSeam();
     rc.showImg();
+    rc.writeImg("../img/out55.jpg");
+    rc.showSeam();
     return 0;
 }
