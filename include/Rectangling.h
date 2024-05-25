@@ -138,8 +138,8 @@ void Rectangling::insertSeam() {
     Seam seam(img);
     
     for (int loopCount = 0; ; loopCount++) {
-        showImg();
-        printf("-------- loopCount: %d --------\n", loopCount);
+        // showImg();
+        // printf("-------- loopCount: %d --------\n", loopCount);
         /* ------- Vertical --------*/
         int len[2] = {0, 0}, mx[2] = {0, 0}, endp[2] = {0, 0};
         for (int i = 0; i < img.rows; i++) {
@@ -234,8 +234,8 @@ void Rectangling::insertSeam() {
             horEndp = endp[1];
         }
         
-        printf("verLen: %d\t verType: %d\t verEndp: %d\n", verLen, verType, verEndp);
-        printf("horLen: %d\t horType: %d\t horEndp: %d\n", horLen, horType, horEndp);
+        // printf("verLen: %d\t verType: %d\t verEndp: %d\n", verLen, verType, verEndp);
+        // printf("horLen: %d\t horType: %d\t horEndp: %d\n", horLen, horType, horEndp);
 
         if (verLen == 0 && horLen == 0) break;
         /* -------- choose vertical or horizontal -------- */
@@ -246,7 +246,7 @@ void Rectangling::insertSeam() {
         if (verLen >= horLen) { // Vertical
             // get rect
             getRect(rect, Vertical, verType, verLen, verEndp);
-            printf("V rect.x: %d\t rect.y: %d\t rect.width: %d\t rect.height: %d\n", rect.x, rect.y, rect.width, rect.height);
+            // printf("V rect.x: %d\t rect.y: %d\t rect.width: %d\t rect.height: %d\n", rect.x, rect.y, rect.width, rect.height);
             tmpImg = img(rect);
             tmpMask = mask(rect);
             tmpDispV = dispV(rect);
@@ -256,7 +256,7 @@ void Rectangling::insertSeam() {
         else { // Horizontal
             // get rect
             getRect(rect, Horizontal, horType, horLen, horEndp);
-            printf("H rect.x: %d\t rect.y: %d\t rect.width: %d\t rect.height: %d\n", rect.x, rect.y, rect.width, rect.height);
+            // printf("H rect.x: %d\t rect.y: %d\t rect.width: %d\t rect.height: %d\n", rect.x, rect.y, rect.width, rect.height);
             tmpImg = img(rect);
             tmpMask = mask(rect);
             tmpDispH = dispH(rect);
@@ -266,6 +266,7 @@ void Rectangling::insertSeam() {
         img(rect) = tmpImg;
         mask(rect) = tmpMask;
     }
+    showImg();
 }
 
 void Rectangling::showImg() {

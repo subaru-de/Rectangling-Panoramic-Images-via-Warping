@@ -36,8 +36,8 @@ public:
         -1, 0, 1
     );
     Seam(const Mat &img);
-    void insertVertical(Mat &img, Mat &mask, BorderType BType);
-    void insertHorizontal(Mat &img, Mat &mask, BorderType BType);
+    void insertVertical(Mat &img, Mat &mask, Mat &dispV, BorderType BType);
+    void insertHorizontal(Mat &img, Mat &mask, Mat &dispH, BorderType BType);
 };
 
 Seam::Seam(const Mat &img) {
@@ -85,8 +85,8 @@ Seam::Seam(const Mat &img) {
 }
 
 void Seam::insertVertical(Mat &img, Mat &mask, Mat &dispV, BorderType BType) { 
-    cout << "-------- insert vertical seam --------\n";
-    cout << "sub-image size: " << img.size() << '\n';
+    // cout << "-------- insert vertical seam --------\n";
+    // cout << "sub-image size: " << img.size() << '\n';
     // 保证找出的 seam 在 mask == 1 范围内
     // 考虑如何实现这件事
     // 论文中给出的方法是把 mask == 0 的像素的 cost 都设成 inf = 1e8，以此保证 seam 不经过它们
@@ -226,11 +226,11 @@ void Seam::insertVertical(Mat &img, Mat &mask, Mat &dispV, BorderType BType) {
 }
 
 void Seam::insertHorizontal(Mat &img, Mat &mask, Mat &dispH, BorderType BType) {
-    cout << "-------- insert horizontal seam --------\n";
+    // cout << "-------- insert horizontal seam --------\n";
     
     /* -------- Find Horizontal Seam -------- */
-    cout << "sub-image size: " << img.size() << '\n';
-    cout << img.rows << ' ' << img.cols << '\n';
+    // cout << "sub-image size: " << img.size() << '\n';
+    // cout << img.rows << ' ' << img.cols << '\n';
     Mat M, from;
     M.create(img.size(), CV_64FC1);
     from.create(img.size(), CV_32SC1);
