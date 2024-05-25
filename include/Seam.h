@@ -84,7 +84,7 @@ Seam::Seam(const Mat &img) {
     // !!! check if E is right.
 }
 
-void Seam::insertVertical(Mat &img, Mat &mask, Mat &dispV, BorderType BType) {
+void Seam::insertVertical(Mat &img, Mat &mask, Mat &dispV, BorderType BType) { 
     cout << "-------- insert vertical seam --------\n";
     cout << "sub-image size: " << img.size() << '\n';
     // 保证找出的 seam 在 mask == 1 范围内
@@ -189,6 +189,7 @@ void Seam::insertVertical(Mat &img, Mat &mask, Mat &dispV, BorderType BType) {
                 // if (!mask.at<uchar>(i, j - 1)) continue;
                 img.at<Vec3b>(i, j) = img.at<Vec3b>(i, j - 1);
                 mask.at<uchar>(i, j) = mask.at<uchar>(i, j - 1);
+                dispV.at<int>(i, j)--;
             }
             if (verSeam[i].y + 1 < img.cols && mask.at<uchar>(verSeam[i].x, verSeam[i].y + 1)) {
                 mask.at<uchar>(verSeam[i].x, verSeam[i].y + 1) = 2;
@@ -208,6 +209,7 @@ void Seam::insertVertical(Mat &img, Mat &mask, Mat &dispV, BorderType BType) {
                 // if (!mask.at<uchar>(i, j + 1)) continue;
                 img.at<Vec3b>(i, j) = img.at<Vec3b>(i, j + 1);
                 mask.at<uchar>(i, j) = mask.at<uchar>(i, j + 1);
+                dispV.at<int>(i, j)++;
             }
             if (verSeam[i].y > 0 && mask.at<uchar>(verSeam[i].x, verSeam[i].y - 1)) {
                 mask.at<uchar>(verSeam[i].x, verSeam[i].y - 1) = 2;
@@ -324,6 +326,7 @@ void Seam::insertHorizontal(Mat &img, Mat &mask, Mat &dispH, BorderType BType) {
                 // if (!mask.at<uchar>(i - 1, j)) continue;
                 img.at<Vec3b>(i, j) = img.at<Vec3b>(i - 1, j);
                 mask.at<uchar>(i, j) = mask.at<uchar>(i - 1, j);
+                dispH.at<int>(i, j)--;
             }
             if (horSeam[j].x + 1 < img.rows && mask.at<uchar>(horSeam[j].x + 1, horSeam[j].y)) {
                 mask.at<uchar>(horSeam[j].x + 1, horSeam[j].y) = 2;
@@ -343,6 +346,7 @@ void Seam::insertHorizontal(Mat &img, Mat &mask, Mat &dispH, BorderType BType) {
                 // if (!mask.at<uchar>(i + 1, j)) continue;
                 img.at<Vec3b>(i, j) = img.at<Vec3b>(i + 1, j);
                 mask.at<uchar>(i, j) = mask.at<uchar>(i + 1, j);
+                dispH.at<int>(i, j)++;
             }
             if (horSeam[j].x > 0 && mask.at<uchar>(horSeam[j].x - 1, horSeam[j].y)) {
                 mask.at<uchar>(horSeam[j].x - 1, horSeam[j].y) = 2;
