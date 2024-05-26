@@ -10,7 +10,7 @@ using namespace cv;
 
 class GLproc {
 private:
-    vector<vector<Point>> &ver, vector<vector<Point>> &nver
+    vector<vector<Point>> &ver, &nver;
     // vector<GLfloat> vertices;
     // vector<GLuint> indices;
 public:
@@ -26,7 +26,7 @@ public:
         }
     }
 
-    void getData(vector<vector<Point>> &ver, vector<GLfloat> &vertices, vector<GLuint> &indices);
+    void getData(Mat &img, vector<vector<Point>> &ver, vector<GLfloat> &vertices, vector<GLuint> &indices);
 };
 
 GLproc::GLproc(Mat &img, vector<vector<Point>> &ver, vector<vector<Point>> &nver):
@@ -53,6 +53,11 @@ ver(ver), nver(nver) {
     glViewport(0, 0, 800, 600);
     glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
 
+    vector<GLfloat> vertices;
+    vector<GLuint> indices;
+    getData(img, ver, vertices, indices);
+
+    GLuint VAO, VBO, EBO;
     // 生成并绑定 VAO
     glGenVertexArrays(1, &VAO);
     glBindVertexArray(VAO);
@@ -60,10 +65,42 @@ ver(ver), nver(nver) {
     // 生成并绑定 VBO
     glGenBuffers(1, &VBO);
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
+    // 此处尝试一下选择 STATIC_DRAW 还是 DYNAMIC_DRAW
+    glBufferData(GL_ARRAY_DATA, vertices.size() * sizeof(GLfloat), &vertices[0], GL_STATIC_DRAW);
 
     // 生成并绑定 EBO
     glGenBuffers(1, &EBO);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+
+    const char *vertexShaderSource = R"(
+        #version 330 core
+        layout (location = 0) in vec3 aPos;
+        void main() {
+           gl_Position = vec4(aPos.x, aPos.y, aPos.z, 1.0);
+        }
+    )";
+    unsigned int vertexShader;
+    vertexShader = glCreateShader(GL_VERTEX_SHADER);
+    glShaderSource(vertexShader, 1, &vertexShaderSource, NULL);
+    glCompileShader(vertexShader);
+    
+    int  success;
+    char infoLog[512];
+    glGetShaderiv(vertexShader, GL_COMPILE_STATUS, &success);
+    if(!success) {
+        glGetShaderInfoLog(vertexShader, 512, NULL, infoLog);
+        std::cout << "ERROR::SHADER::VERTEX::COMPILATION_FAILED\n" << infoLog << std::endl;
+    }
+
+    const char* fragmentShaderSource = R"(
+        #version 330 core
+        out vec4 FragColor;
+        in vec2 TexCoord;
+        uniform sampler2D texture1;
+        void main() {
+            FragColor = texture(texture1, TexCoord);
+        }
+    )";
 
     while(!glfwWindowShouldClose(window)) {
         processInput(window);
@@ -78,6 +115,25 @@ ver(ver), nver(nver) {
     return;
 }
 
-void GLproc::getData(vector<vector<Point>> &ver, vector<GLfloat> &vertices, vector<GLuint> &indices) {
-
+void GLproc::getData(Mat &img, vector<vector<Point>> &ver, vector<GLfloat> &vertices, vector<GLuint> &indices) {
+    for (int i = 0, cnt = 0; i < ver.size(); i++) {
+        for (int j = 0; j < ver[i].size(); j++, cnt++) {
+            Point2f cur = ver[i][j];
+            cur.x /= (float)img.cols;
+            cur.y /= (float)img.rows;
+            cur *= 2.0f;
+            cur -= Point2f(1.0f, 1.0f);
+            vertices.push_back(cur.x);
+            vertices.push_back(cur.y);
+            vertices.push_back(0.0f);
+            if (i) {
+                indices.push_back(cnt);
+                indices.push_back(cnt - ver[i].size());
+            }
+            if (j) {
+                indices.push_back(cnt);
+                indices.push_back(cnt - 1);
+            }
+        }
+    }
 }
