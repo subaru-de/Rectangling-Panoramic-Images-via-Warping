@@ -103,7 +103,6 @@ ver(ver), nver(nver) {
     glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
     glEnableVertexAttribArray(1);
 
-
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindVertexArray(0);
 
@@ -112,14 +111,14 @@ ver(ver), nver(nver) {
 
     while(!glfwWindowShouldClose(window)) {
         processInput(window);
-        glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
+        // glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
 
         glUseProgram(shaderProgram);
         glBindTexture(GL_TEXTURE_2D, texture1);
 
         glBindVertexArray(VAO);
-        glDrawElements(GL_LINES, indices.size(), GL_UNSIGNED_INT, 0);
+        glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0);
 
         glfwSwapBuffers(window);
         glfwPollEvents();
@@ -161,16 +160,18 @@ void GLproc::getData(Mat &img, vector<vector<Point>> &ver, vector<GLfloat> &vert
             // texture Coord
             cur += Point2f(1.0f, 1.0f);
             cur /= 2.0f;
+            cur.y = 1 - cur.y;
             vertices.push_back(cur.x);
             vertices.push_back(cur.y);
             
-            if (i) {
+            if (i && j) {
                 indices.push_back(cnt);
                 indices.push_back(cnt - ver[i].size());
-            }
-            if (j) {
+                indices.push_back(cnt - ver[i].size() - 1);
+
                 indices.push_back(cnt);
                 indices.push_back(cnt - 1);
+                indices.push_back(cnt - ver[i].size() - 1);
             }
         }
     }
@@ -219,7 +220,7 @@ GLuint GLproc::loadTexture(Mat& img) {
     glGenTextures(1, &textureID);
     glBindTexture(GL_TEXTURE_2D, textureID);
 
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, SCR_WIDTH, SCR_HEIGHT, 0, GL_RGB, GL_UNSIGNED_BYTE, img.data);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, SCR_WIDTH, SCR_HEIGHT, 0, GL_BGR, GL_UNSIGNED_BYTE, img.data);
 
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);

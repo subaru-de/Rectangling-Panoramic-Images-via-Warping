@@ -109,7 +109,7 @@ void Rectangling::init() {
             else outImg.at<Vec3b>(i, j) = Black;
         }
     }
-    imshow("qwqwq", outImg);
+    imshow("Image", outImg);
     waitKey(0);
     
     // 初始化位移场
@@ -304,7 +304,7 @@ void Rectangling::insertSeam() {
 
 void Rectangling::showImg() {
     // cout << "qwqwq " << img.size() << '\n';
-    imshow("Image after seam carving", img);
+    imshow("Image", img);
     waitKey(0);
 }
 
@@ -318,7 +318,7 @@ void Rectangling::showSeam() {
             }
         }
     }
-    imshow("Image with Seam", res);
+    imshow("Image", res);
     waitKey(0);
     imwrite("../img/img_with_seam.jpg", res);
 }
@@ -327,7 +327,7 @@ void Rectangling::showMesh(Mesh &mesh, bool initial) {
     Mat res;
     img.copyTo(res);
     mesh.putMesh(res);
-    imshow("Image with Mesh", res);
+    imshow("Image", res);
     waitKey(0);
     if (!initial) imwrite("../img/img_with_mesh.jpg", res);
     else imwrite("../img/initial_img_with_mesh.jpg", res);
