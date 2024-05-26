@@ -13,6 +13,34 @@ private:
     vector<vector<Point>> &ver, &nver;
     // vector<GLfloat> vertices;
     // vector<GLuint> indices;
+    
+    const char *vertexShaderSource = R"(
+        #version 330 core
+        layout (location = 0) in vec3 aPos;
+        void main() {
+           gl_Position = vec4(aPos.x, aPos.y, aPos.z, 1.0);
+        }
+    )";
+
+    /*
+    const char* fragmentShaderSource = R"(
+        #version 330 core
+        out vec4 FragColor;
+        in vec2 TexCoord;
+        uniform sampler2D texture1;
+        void main() {
+            FragColor = texture(texture1, TexCoord);
+        }
+    )";
+    */
+    
+    const char* fragmentShaderSource = R"(
+        #version 330 core
+        out vec4 FragColor;
+        void main() {
+            FragColor = vec4(1.0f, 0.5f, 0.2f, 1.0f);
+        } 
+    )";
 public:
     GLproc(Mat &img, vector<vector<Point>> &ver, vector<vector<Point>> &nver);
 
@@ -27,6 +55,8 @@ public:
     }
 
     void getData(Mat &img, vector<vector<Point>> &ver, vector<GLfloat> &vertices, vector<GLuint> &indices);
+    GLuint compileShader(GLenum type, const char* source);
+    GLuint createShaderProgram();
 };
 
 GLproc::GLproc(Mat &img, vector<vector<Point>> &ver, vector<vector<Point>> &nver):
@@ -72,41 +102,21 @@ ver(ver), nver(nver) {
     glGenBuffers(1, &EBO);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
 
-    const char *vertexShaderSource = R"(
-        #version 330 core
-        layout (location = 0) in vec3 aPos;
-        void main() {
-           gl_Position = vec4(aPos.x, aPos.y, aPos.z, 1.0);
-        }
-    )";
-    unsigned int vertexShader;
-    vertexShader = glCreateShader(GL_VERTEX_SHADER);
-    glShaderSource(vertexShader, 1, &vertexShaderSource, NULL);
-    glCompileShader(vertexShader);
-    
-    int  success;
-    char infoLog[512];
-    glGetShaderiv(vertexShader, GL_COMPILE_STATUS, &success);
-    if(!success) {
-        glGetShaderInfoLog(vertexShader, 512, NULL, infoLog);
-        std::cout << "ERROR::SHADER::VERTEX::COMPILATION_FAILED\n" << infoLog << std::endl;
-    }
-
-    const char* fragmentShaderSource = R"(
-        #version 330 core
-        out vec4 FragColor;
-        in vec2 TexCoord;
-        uniform sampler2D texture1;
-        void main() {
-            FragColor = texture(texture1, TexCoord);
-        }
-    )";
+    GLuint shaderProgram = createShaderProgram();
 
     while(!glfwWindowShouldClose(window)) {
-        processInput(window);
-
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
+
+        glUseProgram(shaderProgram);
+        // glBindTexture(GL_TEXTURE_2D, textureID);
+
+        processInput(window);
+
+        glBindVertexArray(VAO);
+        glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0);
+        glBindVertexArray(0);
+
 
         glfwSwapBuffers(window);
         glfwPollEvents();
@@ -136,4 +146,42 @@ void GLproc::getData(Mat &img, vector<vector<Point>> &ver, vector<GLfloat> &vert
             }
         }
     }
+}
+
+GLuint GLproc::compileShader(GLenum type, const char* source) {
+    GLuint shader = glCreateShader(type);
+    glShaderSource(shader, 1, &source, NULL);
+    glCompileShader(shader);
+
+    int success;
+    char infoLog[512];
+    glGetShaderiv(shader, GL_COMPILE_STATUS, &success);
+    if (!success) {
+        glGetShaderInfoLog(shader, 512, NULL, infoLog);
+        std::cerr << "ERROR::SHADER::COMPILATION_FAILED\n" << infoLog << std::endl;
+    }
+    return shader;
+}
+
+GLuint GLproc::createShaderProgram() {
+    GLuint vertexShader = compileShader(GL_VERTEX_SHADER, vertexShaderSource);
+    GLuint fragmentShader = compileShader(GL_FRAGMENT_SHADER, fragmentShaderSource);
+
+    GLuint shaderProgram = glCreateProgram();
+    glAttachShader(shaderProgram, vertexShader);
+    glAttachShader(shaderProgram, fragmentShader);
+    glLinkProgram(shaderProgram);
+
+    int success;
+    char infoLog[512];
+    glGetProgramiv(shaderProgram, GL_LINK_STATUS, &success);
+    if (!success) {
+        glGetProgramInfoLog(shaderProgram, 512, NULL, infoLog);
+        std::cerr << "ERROR::PROGRAM::LINKING_FAILED\n" << infoLog << std::endl;
+    }
+
+    glDeleteShader(vertexShader);
+    glDeleteShader(fragmentShader);
+
+    return shaderProgram;
 }
