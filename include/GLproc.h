@@ -44,15 +44,8 @@ private:
 public:
     GLproc(Mat &img, vector<vector<Point>> &ver, vector<vector<Point>> &nver);
 
-    static void framebuffer_size_callback(GLFWwindow* window, int width, int height) {
-        glViewport(0, 0, width, height);
-    }
-
-    void processInput(GLFWwindow *window) {
-        if(glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
-            glfwSetWindowShouldClose(window, true);
-        }
-    }
+    static void framebuffer_size_callback(GLFWwindow* window, int width, int height);
+    void processInput(GLFWwindow *window);
 
     void getData(Mat &img, vector<vector<Point>> &ver, vector<GLfloat> &vertices, vector<GLuint> &indices);
     GLuint compileShader(GLenum type, const char* source);
@@ -135,6 +128,16 @@ ver(ver), nver(nver) {
     glDeleteProgram(shaderProgram);
     glfwTerminate();
     return;
+}
+
+void GLproc::framebuffer_size_callback(GLFWwindow* window, int width, int height) {
+    glViewport(0, 0, width, height);
+}
+
+void GLproc::processInput(GLFWwindow *window) {
+    if(glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
+        glfwSetWindowShouldClose(window, true);
+    }
 }
 
 void GLproc::getData(Mat &img, vector<vector<Point>> &ver, vector<GLfloat> &vertices, vector<GLuint> &indices) {
