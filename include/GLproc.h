@@ -8,9 +8,11 @@ using std::cout;
 using std::vector;
 using namespace cv;
 
+typedef vector<vector<Point>> vecvecP;
+
 class GLproc {
 private:
-    vector<vector<Point>> &ver, &nver;
+    vecvecP &ver, &nver;
     unsigned int SCR_WIDTH, SCR_HEIGHT;
     // vector<GLfloat> vertices;
     // vector<GLuint> indices;
@@ -36,19 +38,19 @@ private:
         } 
     )";
 public:
-    GLproc(Mat &img, vector<vector<Point>> &ver, vector<vector<Point>> &nver);
+    GLproc(Mat &img, vecvecP &ver, vecvecP &nver);
 
     static void framebuffer_size_callback(GLFWwindow* window, int width, int height);
     void processInput(GLFWwindow *window);
 
-    void getData(Mat &img, vector<vector<Point>> &ver, vector<GLfloat> &vertices, vector<GLuint> &indices);
+    void getData(Mat &img, vecvecP &ver, vecvecP &nver, vector<GLfloat> &vertices, vector<GLuint> &indices);
     GLuint compileShader(GLenum type, const char* source);
     GLuint createShaderProgram();
 
     GLuint loadTexture(Mat& img);
 };
 
-GLproc::GLproc(Mat &img, vector<vector<Point>> &ver, vector<vector<Point>> &nver):
+GLproc::GLproc(Mat &img, vecvecP &ver, vecvecP &nver):
 ver(ver), nver(nver) {
     glfwInit();
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
@@ -77,7 +79,7 @@ ver(ver), nver(nver) {
 
     vector<GLfloat> vertices;
     vector<GLuint> indices;
-    getData(img, ver, vertices, indices);
+    getData(img, ver, nver, vertices, indices);
 
     GLuint textureID = loadTexture(img);
 
@@ -142,25 +144,24 @@ void GLproc::processInput(GLFWwindow *window) {
     }
 }
 
-void GLproc::getData(Mat &img, vector<vector<Point>> &ver, vector<GLfloat> &vertices, vector<GLuint> &indices) {
+void GLproc::getData(Mat &img, vecvecP &ver, vecvecP &nver, vector<GLfloat> &vertices, vector<GLuint> &indices) {
     for (int i = 0, cnt = 0; i < ver.size(); i++) {
         for (int j = 0; j < ver[i].size(); j++, cnt++) {
-            Point2f cur = ver[i][j];
+            // positions
+            Point2f cur = nver[i][j];
             cur.x /= (float)img.cols;
             cur.y = img.rows - cur.y - 1;
             cur.y /= (float)img.rows;
             cur *= 2.0f;
             cur -= Point2f(1.0f, 1.0f);
-
-            // positions
             vertices.push_back(cur.x);
             vertices.push_back(cur.y);
             vertices.push_back(0.0f);
 
             // texture Coord
-            cur += Point2f(1.0f, 1.0f);
-            cur /= 2.0f;
-            cur.y = 1 - cur.y;
+            cur = ver[i][j];
+            cur.x /= (float)img.cols;
+            cur.y /= (float)img.rows;
             vertices.push_back(cur.x);
             vertices.push_back(cur.y);
             
