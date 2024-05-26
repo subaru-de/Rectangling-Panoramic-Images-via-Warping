@@ -11,18 +11,21 @@ using namespace cv;
 class GLproc {
 private:
     vector<vector<Point>> &ver, &nver;
+    unsigned int SCR_WIDTH, SCR_HEIGHT;
     // vector<GLfloat> vertices;
     // vector<GLuint> indices;
     
     const char *vertexShaderSource = R"(
         #version 330 core
         layout (location = 0) in vec3 aPos;
+        layout (location = 1) in vec2 aTexCoord;
+        out vec2 TexCoord;
         void main() {
            gl_Position = vec4(aPos.x, aPos.y, aPos.z, 1.0);
+           TexCoord = aTexCoord;
         }
     )";
-
-    /*
+    
     const char* fragmentShaderSource = R"(
         #version 330 core
         out vec4 FragColor;
@@ -30,15 +33,6 @@ private:
         uniform sampler2D texture1;
         void main() {
             FragColor = texture(texture1, TexCoord);
-        }
-    )";
-    */
-    
-    const char* fragmentShaderSource = R"(
-        #version 330 core
-        out vec4 FragColor;
-        void main() {
-            FragColor = vec4(1.0f, 0.5f, 0.2f, 1.0f);
         } 
     )";
 public:
@@ -50,6 +44,8 @@ public:
     void getData(Mat &img, vector<vector<Point>> &ver, vector<GLfloat> &vertices, vector<GLuint> &indices);
     GLuint compileShader(GLenum type, const char* source);
     GLuint createShaderProgram();
+
+    GLuint loadTexture(Mat& img);
 };
 
 GLproc::GLproc(Mat &img, vector<vector<Point>> &ver, vector<vector<Point>> &nver):
@@ -60,8 +56,8 @@ ver(ver), nver(nver) {
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
     //glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 
-    const unsigned int SCR_WIDTH = img.cols;
-    const unsigned int SCR_HEIGHT = img.rows;
+    SCR_WIDTH = img.cols;
+    SCR_HEIGHT = img.rows;
 
     GLFWwindow* window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "Source Mesh", NULL, NULL);
     if (window == NULL) {
@@ -83,6 +79,8 @@ ver(ver), nver(nver) {
     vector<GLuint> indices;
     getData(img, ver, vertices, indices);
 
+    GLuint textureID = loadTexture(img);
+
     GLuint VAO, VBO, EBO;
     // 生成并绑定 VAO
     glGenVertexArrays(1, &VAO);
@@ -100,12 +98,16 @@ ver(ver), nver(nver) {
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(GLuint), &indices[0], GL_STATIC_DRAW);
 
     // 第四个参数代表是否需要标准化
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
+    glEnableVertexAttribArray(1);
+
 
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindVertexArray(0);
 
+    GLuint texture1 = loadTexture(img);
     GLuint shaderProgram = createShaderProgram();
 
     while(!glfwWindowShouldClose(window)) {
@@ -114,10 +116,10 @@ ver(ver), nver(nver) {
         glClear(GL_COLOR_BUFFER_BIT);
 
         glUseProgram(shaderProgram);
+        glBindTexture(GL_TEXTURE_2D, texture1);
 
         glBindVertexArray(VAO);
         glDrawElements(GL_LINES, indices.size(), GL_UNSIGNED_INT, 0);
-
 
         glfwSwapBuffers(window);
         glfwPollEvents();
@@ -125,6 +127,7 @@ ver(ver), nver(nver) {
     glDeleteVertexArrays(1, &VAO);
     glDeleteBuffers(1, &VBO);
     glDeleteBuffers(1, &EBO);
+    glDeleteTextures(1, &texture1);
     glDeleteProgram(shaderProgram);
     glfwTerminate();
     return;
@@ -149,9 +152,18 @@ void GLproc::getData(Mat &img, vector<vector<Point>> &ver, vector<GLfloat> &vert
             cur.y /= (float)img.rows;
             cur *= 2.0f;
             cur -= Point2f(1.0f, 1.0f);
+
+            // positions
             vertices.push_back(cur.x);
             vertices.push_back(cur.y);
             vertices.push_back(0.0f);
+
+            // texture Coord
+            cur += Point2f(1.0f, 1.0f);
+            cur /= 2.0f;
+            vertices.push_back(cur.x);
+            vertices.push_back(cur.y);
+            
             if (i) {
                 indices.push_back(cnt);
                 indices.push_back(cnt - ver[i].size());
@@ -200,4 +212,19 @@ GLuint GLproc::createShaderProgram() {
     glDeleteShader(fragmentShader);
 
     return shaderProgram;
+}
+
+GLuint GLproc::loadTexture(Mat& img) {
+    GLuint textureID;
+    glGenTextures(1, &textureID);
+    glBindTexture(GL_TEXTURE_2D, textureID);
+
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, SCR_WIDTH, SCR_HEIGHT, 0, GL_RGB, GL_UNSIGNED_BYTE, img.data);
+
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+    return textureID;
 }
