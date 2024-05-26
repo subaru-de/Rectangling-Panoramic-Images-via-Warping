@@ -128,15 +128,19 @@ img(image) {
     img.copyTo(img_bak);
     init();
     showImg();
+    
     insertSeam();
     showImg();
     writeImg("../img/out2.jpg");
     showSeam();
+
     Mesh mesh(img);
     showMesh(mesh);
     img_bak.copyTo(img);
     mesh.displace(dispV, dispH);
     showMesh(mesh, 1);
+    
+    mesh.callGL(img);
 }
 
 void Rectangling::getRect(Rect &rect, DirectionType DType, BorderType BType, int seamLen, int seamEndp) {

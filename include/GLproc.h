@@ -11,14 +11,14 @@ using namespace cv;
 class GLproc {
 private:
 public:
-    GLproc(vector<vector<Point>> ver, vector<vector<Point>> nver);
+    GLproc(Mat &img, vector<vector<Point>> &ver, vector<vector<Point>> &nver);
 };
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height) {
     glViewport(0, 0, width, height);
 }
 
-GLproc::GLproc(vector<vector<Point>> ver, vector<vector<Point>> nver) {
+GLproc::GLproc(Mat &img, vector<vector<Point>> &ver, vector<vector<Point>> &nver) {
     glfwInit();
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);

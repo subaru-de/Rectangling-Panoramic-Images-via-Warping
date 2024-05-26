@@ -12,6 +12,7 @@ public:
     Mesh(Mat &img);
     void putMesh(Mat &img);
     void displace(Mat &dispV, Mat &dispH);
+    void callGL(Mat &img);
 };
 
 Mesh::Mesh(Mat &img) {
@@ -79,4 +80,8 @@ void Mesh::displace(Mat &dispV, Mat &dispH) {
         }
         cout << '\n';
     }
+}
+
+void Mesh::callGL(Mat &img) {
+    GLproc glp(img, ver, nver);
 }
