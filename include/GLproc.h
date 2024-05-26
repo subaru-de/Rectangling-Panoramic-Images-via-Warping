@@ -67,7 +67,10 @@ ver(ver), nver(nver) {
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
     //glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 
-    GLFWwindow* window = glfwCreateWindow(800, 600, "Source Mesh", NULL, NULL);
+    const unsigned int SCR_WIDTH = img.cols;
+    const unsigned int SCR_HEIGHT = img.rows;
+
+    GLFWwindow* window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "Source Mesh", NULL, NULL);
     if (window == NULL) {
         cout << "Failed to create GLFW window" << '\n';
         glfwTerminate();
@@ -80,7 +83,7 @@ ver(ver), nver(nver) {
         return;
     }
 
-    glViewport(0, 0, 800, 600);
+    glViewport(0, 0, SCR_WIDTH, SCR_HEIGHT);
     glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
 
     vector<GLfloat> vertices;
