@@ -92,6 +92,7 @@ Rectangling_EXTERNAL_OBJECTS =
 
 Rectangling: CMakeFiles/Rectangling.dir/Rectangling.cpp.o
 Rectangling: CMakeFiles/Rectangling.dir/build.make
+Rectangling: /usr/lib/x86_64-linux-gnu/libglfw.so.3.3
 Rectangling: /usr/local/lib/libopencv_gapi.so.4.9.0
 Rectangling: /usr/local/lib/libopencv_highgui.so.4.9.0
 Rectangling: /usr/local/lib/libopencv_ml.so.4.9.0
@@ -101,6 +102,8 @@ Rectangling: /usr/local/lib/libopencv_stitching.so.4.9.0
 Rectangling: /usr/local/lib/libopencv_video.so.4.9.0
 Rectangling: /usr/local/lib/libopencv_videoio.so.4.9.0
 Rectangling: glad/libglad.a
+Rectangling: /usr/lib/x86_64-linux-gnu/libGLX.so
+Rectangling: /usr/lib/x86_64-linux-gnu/libOpenGL.so
 Rectangling: /usr/local/lib/libopencv_imgcodecs.so.4.9.0
 Rectangling: /usr/local/lib/libopencv_dnn.so.4.9.0
 Rectangling: /usr/local/lib/libopencv_calib3d.so.4.9.0

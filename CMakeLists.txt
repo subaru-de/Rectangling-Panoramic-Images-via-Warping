@@ -2,6 +2,11 @@ cmake_minimum_required(VERSION 3.20)
 project(Rectangling)
 add_executable(Rectangling Rectangling.cpp)
 
+find_package(glfw3 3.3 REQUIRED)
+find_package(OpenGL REQUIRED)
+
+target_link_libraries(Rectangling glfw OpenGL::GL)
+
 find_package(OpenCV REQUIRED)
 include_directories(
     "${CMAKE_SOURCE_DIR}/include"

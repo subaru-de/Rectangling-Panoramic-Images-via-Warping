@@ -4,6 +4,7 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 #include <opencv2/opencv.hpp>
+#include <GLproc.h>
 
 class Mesh {
 private:
@@ -31,6 +32,7 @@ Mesh::Mesh(Mat &img) {
     totVerR++;
     totVerC++;
     ver.resize(totVerR, vector<Point>(totVerC, {0, 0}));
+    nver.resize(totVerR, vector<Point>(totVerC, {0, 0}));
 
     cout << totVerR << ' ' << totVerC << ' ' << disR << ' ' << disC << '\n';
 

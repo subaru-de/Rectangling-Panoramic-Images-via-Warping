@@ -433,8 +433,11 @@ CMakeFiles/Rectangling.dir/Rectangling.cpp.o: ../Rectangling.cpp \
   /usr/local/include/opencv4/opencv2/video/background_segm.hpp \
   ../include/Rectangling.h \
   ../include/Seam.h \
-  ../include/Mesh.h
+  ../include/Mesh.h \
+  ../include/GLproc.h
 
+
+../include/GLproc.h:
 
 ../include/Seam.h:
 
