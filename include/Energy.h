@@ -5,6 +5,7 @@
 #include <opencv2/opencv.hpp>
 #include <Rectangling.h>
 #include <Eigen/Core>
+#include <Eigen/Sparse>
 
 using std::cout;
 using std::string;
@@ -17,7 +18,7 @@ private:
     const double lambdaBound = 1e8;
     Mat &img;
     vecvecP &ver, &nver;
-    MatrixXd A(0, 4), B, C, V(0, 1), Y;
+    SparseMatrix<double> A, B, C, V(0, 1), Y(0, 1);
 public:
     Energy(Mat &img, vecvecP &ver, vecvecP &nver);
     double getEnergy();
@@ -36,6 +37,8 @@ double Energy::getEnergy() {
     double E = 0.0;
     E += shapeTerm();
     E += lambdaBound * boundTerm();
+    E += lambdaLine * lineTerm();
+    return E;
 }
 
 double Energy::shapeTerm() {
@@ -86,13 +89,17 @@ double Energy::shapeTerm() {
                 nver[i][j].x, nver[i][j].y;
             
             Aq = (Aq * (Aq.transpose * Aq).inverse() * Aq.transpose() - MatrixXd::Identity(8, 8));
-            A.resize(A.rows() + Aq.rows(), A.cols());
-            A << Aq;
-            V.resize(V.rows() + Vq.rows(), V.cols());
-            V << Vq;
             VectorXd tmp = Aq * Vq;
             E += tmp.dot(tmp);
             cnt += 1.0;
+
+            Aq = Aq.transpose() * Aq;
+            A.resize(A.rows() + Aq.rows(), A.cols() + Aq.cols());
+            A.block(A.rows() - Aq.rows(), A.cols() - Aq.cols()) << Aq;
+            V.resize(V.rows() + Vq.rows(), V.cols());
+            V << Vq;
+            Y.resize(Y.rows() + Aq.rows(), Y.cols());
+            Y << MatrixXd::zero(8, 1);
         }
     }
     E /= cnt;
@@ -100,16 +107,32 @@ double Energy::shapeTerm() {
 }
 
 double Energy::boundTerm() {
+    // 这里处理 B 矩阵与 Y
     double E = 0;
-    for (int j = 0; j < nver[0].size(); j++) {
-        E += nver[0][j].y * nver[0][j].y;
-        double de = (nver.back())[j].y - img.rows + 1;
-        E += de * de;
-    }
     for (int i = 0; i < nver.size(); i++) {
-        E += nver[i][0].x * nver[i][0].x;
-        double de = nver[i].back().x - img.cols + 1;
-        E += de * de;
+        for (int j = 0; j < nver[i].size(); j++) {
+            if (!i || !j) continue;
+            MatrixXd Bq(8, 8);
+            Bq <<
+                nver[i - 1][j - 1].x, -nver[i - 1][j - 1].y, 1, 0,
+                nver[i - 1][j - 1].y, nver[i - 1][j - 1].x, 0, 1,
+                nver[i - 1][j].x, -nver[i - 1][j].y, 1, 0,
+                nver[i - 1][j].y, nver[i - 1][j].x, 0, 1,
+                nver[i][j - 1].x, -nver[i][j - 1].y, 1, 0,
+                nver[i][j - 1].y, nver[i][j - 1].x, 0, 1,
+                nver[i][j].x, -nver[i][j].y, 1, 0,
+                nver[i][j].y, nver[i][j].x, 0, 1;
+        }
     }
+    // for (int j = 0; j < nver[0].size(); j++) {
+    //     E += nver[0][j].y * nver[0][j].y;
+    //     double de = (nver.back())[j].y - img.rows + 1;
+    //     E += de * de;
+    // }
+    // for (int i = 0; i < nver.size(); i++) {
+    //     E += nver[i][0].x * nver[i][0].x;
+    //     double de = nver[i].back().x - img.cols + 1;
+    //     E += de * de;
+    // }
     return E;
 }
