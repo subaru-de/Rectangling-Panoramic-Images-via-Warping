@@ -14,6 +14,12 @@ include_directories(
 )
 target_link_libraries(Rectangling ${OpenCV_LIBS})
 
+find_package(Eigen3 REQUIRED)
+include_directories(
+    ${Eigen_INCLUDE_DIRS}
+)
+target_link_libraries(Rectangling ${OpenCV_LIBS})
+
 add_subdirectory(glad)
 target_link_libraries(Rectangling glad)
 
