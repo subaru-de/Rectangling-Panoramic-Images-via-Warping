@@ -1,3 +1,5 @@
+// #ifndef Mesh
+// #define Mesh
 #include <vector>
 #include <string>
 #include <iostream>
@@ -5,18 +7,22 @@
 #include <GLFW/glfw3.h>
 #include <opencv2/opencv.hpp>
 #include <GLproc.h>
+#include <Energy.h>
 
 class Mesh {
 private:
+    Mat &img;
     vector<vector<Point>> ver, nver;
 public:
     Mesh(Mat &img);
     void putMesh(Mat &img);
     void displace(Mat &dispV, Mat &dispH);
-    void callGL(Mat &img);
+    void callGL();
+    void callEnergy();
 };
 
-Mesh::Mesh(Mat &img) {
+Mesh::Mesh(Mat &img):
+img(img) {
     const double totVer = 400;
     double scale = sqrt(img.rows * img.cols * 1.0 / totVer);
     
@@ -84,6 +90,12 @@ void Mesh::displace(Mat &dispV, Mat &dispH) {
     }
 }
 
-void Mesh::callGL(Mat &img) {
+void Mesh::callGL() {
     GLproc glp(img, ver, nver);
 }
+
+void Mesh::callEnergy() {
+    Energy energy(img, ver, nver);
+}
+
+// #endif

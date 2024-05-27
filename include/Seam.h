@@ -1,3 +1,5 @@
+// #ifndef Seam
+// #define Seam
 #include <cmath>
 #include <vector>
 #include <iostream>
@@ -370,3 +372,4 @@ void Seam::insertHorizontal(Mat &img, Mat &mask, Mat &dispH, Mat &litSeam, Borde
         }
     }
 }
+// #endif

@@ -1,3 +1,5 @@
+// #ifndef Rectangling
+// #define Rectangling
 #include <vector>
 #include <string>
 #include <iostream>
@@ -14,7 +16,7 @@ using namespace cv;
 
 // const Vec3b Black = Vec3b(0, 0, 0);
 // const Vec3b White = Vec3b(255, 255, 255);
-
+namespace {
 enum DirectionType {
     Vertical = 0,
     Horizontal = 1
@@ -140,7 +142,8 @@ img(image) {
     mesh.displace(dispV, dispH);
     showMesh(mesh, 1);
     
-    mesh.callGL(img);
+    mesh.callGL();
+
 }
 
 void Rectangling::getRect(Rect &rect, DirectionType DType, BorderType BType, int seamLen, int seamEndp) {
@@ -336,3 +339,6 @@ void Rectangling::showMesh(Mesh &mesh, bool initial) {
 void Rectangling::writeImg(string filename) {
     imwrite(filename, img);
 }
+
+}
+// #endif

@@ -1,3 +1,5 @@
+// #ifndef GLproc
+// #define GLproc
 #include <vector>
 #include <iostream>
 #include <glad/glad.h>
@@ -230,3 +232,4 @@ GLuint GLproc::loadTexture(Mat& img) {
 
     return textureID;
 }
+// #endif

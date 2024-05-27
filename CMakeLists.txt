@@ -14,11 +14,11 @@ include_directories(
 )
 target_link_libraries(Rectangling ${OpenCV_LIBS})
 
-find_package(Eigen3 REQUIRED)
+find_package(Eigen3 3.3 REQUIRED NO_MODULE)
 include_directories(
     ${Eigen_INCLUDE_DIRS}
 )
-target_link_libraries(Rectangling ${OpenCV_LIBS})
+# target_link_libraries(Rectangling ${Eigen_LIBRARIES})
 
 add_subdirectory(glad)
 target_link_libraries(Rectangling glad)
