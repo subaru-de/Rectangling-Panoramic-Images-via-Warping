@@ -27,6 +27,10 @@ private:
     MatrixXd V, Y;
 public:
     Energy(Mat &img, vecvecP &ver, vecvecP &nver);
+    void getV();
+    void getA();
+    void getB();
+    void getC();
     double getEnergy();
     // 为了减少一次遍历，在 shapeTerm 函数中同时执行 getV 与 getA
     double shapeTerm();
@@ -45,9 +49,11 @@ V(0, 1), Y(0, 1) {
 
 double Energy::getEnergy() {
     getV();
+    getA();
+    getB();
     double E = 0.0;
-    E += shapeTerm();
-    E += lambdaBound * boundTerm();
+    E += (A * V).coeff(0, 0);
+    E += lambdaBound * (B * V).coeff(0, 0);
     // E += lambdaLine * lineTerm();
     return E;
 }
@@ -76,24 +82,24 @@ void Energy::getA() {
                 ver[i][j].x, -ver[i][j].y, 1, 0,
                 ver[i][j].y, ver[i][j].x, 0, 1;
             Aq = (Aq * (Aq.transpose() * Aq).inverse() * Aq.transpose() - MatrixXd::Identity(8, 8));
-            Aq = Aq.transpose() * Aq;
+            // Aq = Aq.transpose() * Aq;
             for (int u = 0, uo, vo; u < 8; u++) {
                 uo = Nq * 8 + u;
                 vo = ((i - 1) * 21 + j - 1) * 2;
-                A.insert(uo, vo) = Aq[u][0];
-                A.insert(uo, vo + 1) = Aq[u][1];
+                A.insert(uo, vo) = Aq(u, 0);
+                A.insert(uo, vo + 1) = Aq(u, 1);
 
                 vo = ((i - 1) * 21 + j) * 2;
-                A.insert(uo, vo) = Aq[u][2];
-                A.insert(uo, vo + 1) = Aq[u][3];
+                A.insert(uo, vo) = Aq(u, 2);
+                A.insert(uo, vo + 1) = Aq(u, 3);
                 
                 vo = (i * 21 + j - 1) * 2;
-                A.insert(uo, vo) = Aq[u][4];
-                A.insert(uo, vo + 1) = Aq[u][5];
+                A.insert(uo, vo) = Aq(u, 4);
+                A.insert(uo, vo + 1) = Aq(u, 5);
                 
                 vo = (i * 21 + j) * 2;
-                A.insert(uo, vo) = Aq[u][6];
-                A.insert(uo, vo + 1) = Aq[u][7];
+                A.insert(uo, vo) = Aq(u, 6);
+                A.insert(uo, vo + 1) = Aq(u, 7);
             }
             Y.resize(Y.rows() + 8, 1);
             Y << MatrixXd::Zero(8, 1);
@@ -156,20 +162,20 @@ double Energy::shapeTerm() {
             for (int u = 0, uo, vo; u < 8; u++) {
                 uo = Nq * 8 + u;
                 vo = ((i - 1) * 21 + j - 1) * 2;
-                A.insert(uo, vo) = Aq[u][0];
-                A.insert(uo, vo + 1) = Aq[u][1];
+                A.insert(uo, vo) = Aq(u, 0);
+                A.insert(uo, vo + 1) = Aq(u, 1);
 
                 vo = ((i - 1) * 21 + j) * 2;
-                A.insert(uo, vo) = Aq[u][2];
-                A.insert(uo, vo + 1) = Aq[u][3];
+                A.insert(uo, vo) = Aq(u, 2);
+                A.insert(uo, vo + 1) = Aq(u, 3);
                 
                 vo = (i * 21 + j - 1) * 2;
-                A.insert(uo, vo) = Aq[u][4];
-                A.insert(uo, vo + 1) = Aq[u][5];
+                A.insert(uo, vo) = Aq(u, 4);
+                A.insert(uo, vo + 1) = Aq(u, 5);
                 
                 vo = (i * 21 + j) * 2;
-                A.insert(uo, vo) = Aq[u][6];
-                A.insert(uo, vo + 1) = Aq[u][7];
+                A.insert(uo, vo) = Aq(u, 6);
+                A.insert(uo, vo + 1) = Aq(u, 7);
             }
             Y.resize(Y.rows() + 8, 1);
             Y << MatrixXd::Zero(8, 1);
