@@ -62,9 +62,9 @@ double Energy::getEnergy() {
     double E = 0.0;
     // E += (V.transpose() * A.transpose() * A * V)(0, 0);
     VectorXd tmp = A * V;
-    E += tmp.dot(tmp);
+    E += tmp.dot(tmp) / MAXNq;
     tmp = B * V - Y.block(Y.rows() - MAXV, 0, MAXV, 1);
-    E += lambdaBound * tmp.dot(tmp);
+    E += tmp.dot(tmp);
     // E += lambdaLine * lineTerm();
     return E;
 }
@@ -72,14 +72,14 @@ double Energy::getEnergy() {
 void Energy::optimize() {
     SparseMatrix<double> AA = A.transpose() * A;
     std::ofstream outfile;
-    outfile.open("/home/nxte/codes/Rectangling-Panoramic-Images-via-Warping/include/matrix1_output.txt");
-    if (outfile.is_open()) {
-        outfile << A << '\n';
-        outfile.close();
-        std::cout << "矩阵已成功写入文件 matrix1_output.txt" << std::endl;
-    } else {
-        std::cerr << "无法打开文件" << std::endl;
-    }
+    // outfile.open("/home/nxte/codes/Rectangling-Panoramic-Images-via-Warping/include/matrix1_output.txt");
+    // if (outfile.is_open()) {
+    //     outfile << A << '\n';
+    //     outfile.close();
+    //     std::cout << "矩阵已成功写入文件 matrix1_output.txt" << std::endl;
+    // } else {
+    //     std::cerr << "无法打开文件" << std::endl;
+    // }
 
 
     // SparseMatrix<double> AA = A;
@@ -90,22 +90,23 @@ void Energy::optimize() {
             L.insert(it.row(), it.col()) = it.value();
         }
     }
-    outfile.open("/home/nxte/codes/Rectangling-Panoramic-Images-via-Warping/include/matrix2_output.txt");
+    outfile.open("/home/nxte/codes/Rectangling-Panoramic-Images-via-Warping/include/matrix_output.txt");
     if (outfile.is_open()) {
-        outfile << L.block(0, 0, AA.rows(), AA.cols()) << '\n';
+        outfile << L << '\n';
         outfile.close();
-        std::cout << "矩阵已成功写入文件 matrix2_output.txt" << std::endl;
+        std::cout << "矩阵已成功写入文件 matrix_output.txt" << std::endl;
     } else {
         std::cerr << "无法打开文件" << std::endl;
     }
-    // cout << L.block(0, 0, A.rows(), A.cols()) << '\n';
+    bool flag = 0;
     for (int k = 0; k < B.outerSize(); k++) {
         for (SparseMatrix<double>::InnerIterator it(B, k); it; ++it) {
             L.insert(it.row() + A.rows(), it.col()) = it.value();
+            if (it.value()) flag = 1;
         }
     }
     L.makeCompressed();
-
+    assert(flag == 1);
     // L * V = Y
     SparseQR<SparseMatrix<double>, COLAMDOrdering<int>> solver;
     solver.compute(L);
@@ -137,11 +138,11 @@ void Energy::getV() {
     for (int i = 0, cnt = 0; i < nver.size(); i++) {
         for (int j = 0; j < nver[i].size(); j++, cnt += 2) {
             V.block<2, 1>(cnt, 0) << nver[i][j].x, nver[i][j].y;
-            cout << nver[i][j] << ' ';
+            // cout << nver[i][j] << ' ';
         }
-        cout << '\n';
+        // cout << '\n';
     }
-    cout << '\n';
+    // cout << '\n';
     // cout << V.block<10, 1>(0, 0) << '\n';
 }
 
@@ -186,8 +187,7 @@ void Energy::getA() {
         }
     }
     A.makeCompressed();
-    A /= Nq;
-    // cout << Nq * 8 << ' ' << MAXNq << '\n';
+    // A /= Nq;
     assert(Nq * 8 == MAXNq);
 }
 
@@ -196,23 +196,23 @@ void Energy::getB() {
     for (int i = 0, cnt = 0; i < nver.size(); i++) {
         for (int j = 0; j < nver[i].size(); j++, cnt += 2) {
             if (!i) {
-                B.insert(cnt + 1, cnt + 1) = 1;
+                B.insert(cnt + 1, cnt + 1) = lambdaBound;
                 Y(Y.rows() - MAXV + cnt + 1) = 0;
             }
             else if (i + 1 == nver.size()) {
-                B.insert(cnt + 1, cnt + 1) = 1;
-                Y(Y.rows() - MAXV + cnt + 1) = img.rows - 1;
+                B.insert(cnt + 1, cnt + 1) = lambdaBound;
+                Y(Y.rows() - MAXV + cnt + 1) = lambdaBound * (img.rows - 1);
             }
             else {
                 Y(Y.rows() - MAXV + cnt + 1) = 0;
             }
             if (!j) {
-                B.insert(cnt, cnt) = 1;
+                B.insert(cnt, cnt) = lambdaBound;
                 Y(Y.rows() - MAXV + cnt) = 0;
             }
             else if (j + 1 == nver[i].size()) {
-                B.insert(cnt, cnt) = 1;
-                Y(Y.rows() - MAXV + cnt) = img.cols - 1;
+                B.insert(cnt, cnt) = lambdaBound;
+                Y(Y.rows() - MAXV + cnt) = lambdaBound * (img.cols - 1);
             }
             else {
                 Y(Y.rows() - MAXV + cnt) = 0;
