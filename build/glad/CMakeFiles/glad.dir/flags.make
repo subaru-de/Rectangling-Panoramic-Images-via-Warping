@@ -6,5 +6,5 @@ C_DEFINES =
 
 C_INCLUDES = -I/home/nxte/codes/Rectangling-Panoramic-Images-via-Warping/include -I/usr/local/include/opencv4 -I/home/nxte/codes/Rectangling-Panoramic-Images-via-Warping/glad/include
 
-C_FLAGS = -O3 -DNDEBUG
+C_FLAGS = 
 
