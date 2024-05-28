@@ -15,7 +15,7 @@ private:
     vector<vector<Point>> ver, nver;
 public:
     Mesh(Mat &img);
-    void putMesh(Mat &img);
+    void putMesh(Mat &img, bool initial = 1);
     void displace(Mat &dispV, Mat &dispH);
     void callGL();
     void callEnergy();
@@ -62,15 +62,19 @@ img(img) {
     // }
 }
 
-void Mesh::putMesh(Mat &img) {
+void Mesh::putMesh(Mat &img, bool showVer) {
     // put mesh
-    for (int i = 0; i < ver.size(); i++) {
-        for (int j = 0; j < ver[i].size(); j++) {
+    vecvecP &v = nver;
+    if (showVer) {
+        vecvecP &v = ver;
+    }
+    for (int i = 0; i < v.size(); i++) {
+        for (int j = 0; j < v[i].size(); j++) {
             if (i) {
-                line(img, ver[i][j], ver[i - 1][j], Green, 1);
+                line(img, v[i][j], v[i - 1][j], Green, 1);
             }
             if (j) {
-                line(img, ver[i][j], ver[i][j - 1], Green, 1);
+                line(img, v[i][j], v[i][j - 1], Green, 1);
             }
         }
     }

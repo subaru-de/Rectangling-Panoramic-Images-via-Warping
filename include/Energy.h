@@ -31,6 +31,8 @@ public:
     void getB();
     void getC();
     double getEnergy();
+    void optimize();
+    void convertV();
     // 为了减少一次遍历，在 shapeTerm 函数中同时执行 getV 与 getA
     double shapeTerm();
     // 在 lineTerm 中执行 getC
@@ -43,17 +45,19 @@ Energy::Energy(Mat &img, vecvecP &ver, vecvecP &nver):
 MAXNq((ver.size() - 1) * (ver[0].size() - 1) * 8), MAXV(ver.size() * ver[0].size() * 2),
 img(img), ver(ver), nver(nver),
 A(MAXNq, MAXV), B(MAXV, MAXV), C(MAXNq, MAXV),
-V(MAXV, 1), Y(0, 1) {
+V(0, 1), Y(0, 1) {
+    cout << getEnergy() << '\n';
+    optimize();
     cout << getEnergy() << '\n';
 }
 
 double Energy::getEnergy() {
-    getV();
-    cout << "qwqwq\n";
-    getA();
-    cout << "qwqwq\n";
-    getB();
-    cout << "qwqwq\n";
+    if (!V.rows()) {
+        V.resize(MAXV, 1);
+        getV();
+        getA();
+        getB();
+    }
     double E = 0.0;
     VectorXd tmp = A * V;
     E += tmp.dot(tmp);
@@ -63,9 +67,49 @@ double Energy::getEnergy() {
     return E;
 }
 
+void Energy::optimize() {
+    SparseMatrix<double> AA = A.transpose() * A;
+    SparseMatrix<double> L(A.rows() + B.rows(), A.cols());
+    // 竖直方向上 concat 矩阵 AA 和 B
+    for (int k = 0; k < AA.outerSize(); k++) {
+        for (SparseMatrix<double>::InnerIterator it(AA, k); it; ++it) {
+            L.insert(it.row(), it.col()) = it.value();
+        }
+    }
+    for (int k = 0; k < B.outerSize(); k++) {
+        for (SparseMatrix<double>::InnerIterator it(B, k); it; ++it) {
+            L.insert(it.row() + A.rows(), it.col()) = it.value();
+        }
+    }
+    L.makeCompressed();
+
+    // L * V = Y
+    SparseQR<SparseMatrix<double>, COLAMDOrdering<int>> solver;
+    solver.compute(L);
+    if (solver.info() != Success) {
+        std::cerr << "Decomposition failed!" << std::endl;
+        return;
+    }
+    V = solver.solve(Y);
+    if (solver.info() != Success) {
+        std::cerr << "Solving failed!" << std::endl;
+        return;
+    }
+    convertV();
+}
+
+void Energy::convertV() {
+    for (int i = 0, cnt = 0; i < nver.size(); i++) {
+        for (int j = 0; j < nver[i].size(); j++, cnt += 2) {
+            nver[i][j].x = V(cnt, 0);
+            nver[i][j].y = V(cnt + 1, 0);
+        }
+    }
+}
+
 void Energy::getV() {
-    for (int i = 0, cnt = 0; i < ver.size(); i++) {
-        for (int j = 0; j < ver[i].size(); j++, cnt += 2) {
+    for (int i = 0, cnt = 0; i < nver.size(); i++) {
+        for (int j = 0; j < nver[i].size(); j++, cnt += 2) {
             V.block<2, 1>(cnt, 0) << nver[i][j].x, nver[i][j].y;
         }
     }
@@ -111,6 +155,7 @@ void Energy::getA() {
             Nq++;
         }
     }
+    A.makeCompressed();
 }
 
 void Energy::getB() {
@@ -141,28 +186,7 @@ void Energy::getB() {
             }
         }
     }
-    // for (int i = 0, cnt = 0; i < nver.size(); i++) {
-    //     for (int j = 0; j < nver[i].size(); j++, cnt++) {
-    //         if (!i || !j) continue;
-    //         int cur = cnt * 8;
-    //         B.insert(cur, cur) = (i == 1);
-    //         B.insert(cur + 1, cur + 1) = (j == 1);
-    //         Y.resize(Y.rows() + 8, 1);
-    //         Y << 0, 0;
-
-    //         B.insert(cur + 2, cur + 2) = (i == 0);
-    //         B.insert(cur + 3, cur + 3) = (j == nver[i].size() - 1);
-    //         Y << 0, (j == nver[i].size() - 1 ? img.cols : 0);
-
-    //         B.insert(cur + 4, cur + 4) = (i == nver.size() - 1);
-    //         B.insert(cur + 5, cur + 5) = (j == 0);
-    //         Y << (i == nver.size() - 1 ? img.rows : 0), 0;
-
-    //         B.insert(cur + 6, cur + 6) = (i == nver.size() - 1);
-    //         B.insert(cur + 7, cur + 7) = (j == nver[i].size() - 1);
-    //         Y << (i == nver.size() - 1 ? img.rows : 0), (j == nver[i].size() - 1 ? img.cols : 0);
-    //     }
-    // }
+    B.makeCompressed();
 }
 
 void Energy::getC() {}

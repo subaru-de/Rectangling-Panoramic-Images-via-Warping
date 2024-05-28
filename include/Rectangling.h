@@ -39,7 +39,7 @@ public:
     void showImg();
     void writeImg(string filename);
     void showSeam();
-    void showMesh(Mesh &mesh, bool initial = 0);
+    void showMesh(Mesh &mesh, bool initial, bool showVer);
 };
 
 void Rectangling::init() {
@@ -137,13 +137,14 @@ img(image) {
     showSeam();
 
     Mesh mesh(img);
-    showMesh(mesh);
+    showMesh(mesh, 0, 1);
     img_bak.copyTo(img);
     mesh.displace(dispV, dispH);
-    showMesh(mesh, 1);
-    
-    mesh.callGL();
+
+    showMesh(mesh, 1, 1);
     mesh.callEnergy();
+    mesh.callGL();
+    showMesh(mesh, 1, 0);
 }
 
 void Rectangling::getRect(Rect &rect, DirectionType DType, BorderType BType, int seamLen, int seamEndp) {
@@ -326,14 +327,15 @@ void Rectangling::showSeam() {
     imwrite("../img/img_with_seam.jpg", res);
 }
 
-void Rectangling::showMesh(Mesh &mesh, bool initial) {
+void Rectangling::showMesh(Mesh &mesh, bool initial, bool showVer) {
     Mat res;
     img.copyTo(res);
-    mesh.putMesh(res);
+    mesh.putMesh(res, showVer);
     imshow("Image", res);
     waitKey(0);
     if (!initial) imwrite("../img/img_with_mesh.jpg", res);
-    else imwrite("../img/initial_img_with_mesh.jpg", res);
+    else if (showVer) imwrite("../img/initial_img_with_mesh.jpg", res);
+    else imwrite("../img/result_with_mesh.jpg", res);
 }
 
 void Rectangling::writeImg(string filename) {
