@@ -1,6 +1,7 @@
 // #ifndef Energy
 // #define Energy
 #include <string>
+#include <fstream>
 #include <iostream>
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
@@ -59,8 +60,9 @@ double Energy::getEnergy() {
         getB();
     }
     double E = 0.0;
+    // E += (V.transpose() * A.transpose() * A * V)(0, 0);
     VectorXd tmp = A * V;
-    // E += tmp.dot(tmp);
+    E += tmp.dot(tmp);
     tmp = B * V - Y.block(Y.rows() - MAXV, 0, MAXV, 1);
     E += lambdaBound * tmp.dot(tmp);
     // E += lambdaLine * lineTerm();
@@ -69,6 +71,17 @@ double Energy::getEnergy() {
 
 void Energy::optimize() {
     SparseMatrix<double> AA = A.transpose() * A;
+    std::ofstream outfile;
+    outfile.open("/home/nxte/codes/Rectangling-Panoramic-Images-via-Warping/include/matrix1_output.txt");
+    if (outfile.is_open()) {
+        outfile << A << '\n';
+        outfile.close();
+        std::cout << "矩阵已成功写入文件 matrix1_output.txt" << std::endl;
+    } else {
+        std::cerr << "无法打开文件" << std::endl;
+    }
+
+
     // SparseMatrix<double> AA = A;
     SparseMatrix<double> L(A.rows() + B.rows(), A.cols());
     // 竖直方向上 concat 矩阵 AA 和 B
@@ -77,6 +90,15 @@ void Energy::optimize() {
             L.insert(it.row(), it.col()) = it.value();
         }
     }
+    outfile.open("/home/nxte/codes/Rectangling-Panoramic-Images-via-Warping/include/matrix2_output.txt");
+    if (outfile.is_open()) {
+        outfile << L.block(0, 0, AA.rows(), AA.cols()) << '\n';
+        outfile.close();
+        std::cout << "矩阵已成功写入文件 matrix2_output.txt" << std::endl;
+    } else {
+        std::cerr << "无法打开文件" << std::endl;
+    }
+    // cout << L.block(0, 0, A.rows(), A.cols()) << '\n';
     for (int k = 0; k < B.outerSize(); k++) {
         for (SparseMatrix<double>::InnerIterator it(B, k); it; ++it) {
             L.insert(it.row() + A.rows(), it.col()) = it.value();
@@ -120,11 +142,11 @@ void Energy::getV() {
         cout << '\n';
     }
     cout << '\n';
-    // cout << V << '\n';
+    // cout << V.block<10, 1>(0, 0) << '\n';
 }
 
 void Energy::getA() {
-    int Nq = 0;
+    double Nq = 0;
     for (int i = 0; i < ver.size(); i++) {
         for (int j = 0; j < ver[i].size(); j++) {
             if (!i || !j) continue;
@@ -142,19 +164,19 @@ void Energy::getA() {
             // Aq = Aq.transpose() * Aq;
             for (int u = 0, uo, vo; u < 8; u++) {
                 uo = Nq * 8 + u;
-                vo = ((i - 1) * 21 + j - 1) * 2;
+                vo = ((i - 1) * ver[i].size() + j - 1) * 2;
                 A.insert(uo, vo) = Aq(u, 0);
                 A.insert(uo, vo + 1) = Aq(u, 1);
 
-                vo = ((i - 1) * 21 + j) * 2;
+                vo = ((i - 1) * ver[i].size() + j) * 2;
                 A.insert(uo, vo) = Aq(u, 2);
                 A.insert(uo, vo + 1) = Aq(u, 3);
                 
-                vo = (i * 21 + j - 1) * 2;
+                vo = (i * ver[i].size() + j - 1) * 2;
                 A.insert(uo, vo) = Aq(u, 4);
                 A.insert(uo, vo + 1) = Aq(u, 5);
                 
-                vo = (i * 21 + j) * 2;
+                vo = (i * ver[i].size() + j) * 2;
                 A.insert(uo, vo) = Aq(u, 6);
                 A.insert(uo, vo + 1) = Aq(u, 7);
             }
@@ -165,6 +187,8 @@ void Energy::getA() {
     }
     A.makeCompressed();
     A /= Nq;
+    // cout << Nq * 8 << ' ' << MAXNq << '\n';
+    assert(Nq * 8 == MAXNq);
 }
 
 void Energy::getB() {
