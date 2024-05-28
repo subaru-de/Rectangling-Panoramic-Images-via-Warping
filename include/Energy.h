@@ -95,27 +95,44 @@ void Energy::getA() {
                 A.insert(uo, vo) = Aq[u][6];
                 A.insert(uo, vo + 1) = Aq[u][7];
             }
+            Y.resize(Y.rows() + 8, 1);
             Y << MatrixXd::Zero(8, 1);
         }
     }
 }
 
 void Energy::getB() {
+    for (int i = 0, cnt = 0; i < nver.size(); i++) {
+        for (int j = 0; j < nver[i].size(); j++, cnt++) {
+            if (!i || !j) continue;
+            int cur = cnt * 8;
+            B.insert(cur, cur) = (i == 1);
+            B.insert(cur + 1, cur + 1) = (j == 1);
+            Y.resize(Y.rows() + 8, 1);
+            Y << 0, 0;
 
+            B.insert(cur + 2, cur + 2) = (i == 0);
+            B.insert(cur + 3, cur + 3) = (j == nver[i].size() - 1);
+            Y << 0, (j == nver[i].size() - 1 ? img.cols : 0);
+
+            B.insert(cur + 4, cur + 4) = (i == nver.size() - 1);
+            B.insert(cur + 5, cur + 5) = (j == 0);
+            Y << (i == nver.size() - 1 ? img.rows : 0), 0;
+
+            B.insert(cur + 6, cur + 6) = (i == nver.size() - 1);
+            B.insert(cur + 7, cur + 7) = (j == nver[i].size() - 1);
+            Y << (i == nver.size() - 1 ? img.rows : 0), (j == nver[i].size() - 1 ? img.cols : 0);
+        }
+    }
 }
 
-void Energy::getC() {
+void Energy::getC() {}
 
-}
-
-/*
 double Energy::shapeTerm() {
-    // Mat A, AT, ATA, invATA, V, I;
-    // I = Mat::eye(8, 8, CV_64F);
     double E = 0;
-    int cnt = 0;
+    int Nq = 0;
     for (int i = 0; i < ver.size(); i++) {
-        for (int j = 0; j < ver[i].size(); j++) {
+        for (int j = 0; j < ver[i].size(); j++, Nq++) {
             if (!i || !j) continue;
             MatrixXd Aq(8, 4), Vq(8, 1);
             Aq <<
@@ -132,73 +149,64 @@ double Energy::shapeTerm() {
                 nver[i - 1][j].x, nver[i - 1][j].y,
                 nver[i][j - 1].x, nver[i][j - 1].y,
                 nver[i][j].x, nver[i][j].y;
-            
             Aq = (Aq * (Aq.transpose() * Aq).inverse() * Aq.transpose() - MatrixXd::Identity(8, 8));
             VectorXd tmp = Aq * Vq;
             E += tmp.dot(tmp);
-
             Aq = Aq.transpose() * Aq;
-            // A.resize(A.rows() + Aq.rows(), A.cols() + Aq.cols());
-            // A.block(A.rows() - Aq.rows(), A.cols() - Aq.cols()) << Aq;
-            for (int u = 0; u < 8; u++) {
-                for (int v = 0; v < 8; v++) {
-                    A.insert(cnt * 8 + u, cnt * 8 + v) = Aq(u, v);
-                }
-            }
-            V.resize(V.rows() + Vq.rows(), V.cols());
-            V << Vq;
-            Y.resize(Y.rows() + Aq.rows(), Y.cols());
-            Y << MatrixXd::Zero(8, 1);
+            for (int u = 0, uo, vo; u < 8; u++) {
+                uo = Nq * 8 + u;
+                vo = ((i - 1) * 21 + j - 1) * 2;
+                A.insert(uo, vo) = Aq[u][0];
+                A.insert(uo, vo + 1) = Aq[u][1];
 
-            cnt++;
+                vo = ((i - 1) * 21 + j) * 2;
+                A.insert(uo, vo) = Aq[u][2];
+                A.insert(uo, vo + 1) = Aq[u][3];
+                
+                vo = (i * 21 + j - 1) * 2;
+                A.insert(uo, vo) = Aq[u][4];
+                A.insert(uo, vo + 1) = Aq[u][5];
+                
+                vo = (i * 21 + j) * 2;
+                A.insert(uo, vo) = Aq[u][6];
+                A.insert(uo, vo + 1) = Aq[u][7];
+            }
+            Y.resize(Y.rows() + 8, 1);
+            Y << MatrixXd::Zero(8, 1);
         }
     }
-    E /= cnt;
+    E /= Nq;
     return E;
 }
 
 double Energy::boundTerm() {
-    // 这里处理 B 矩阵与 Y
     double E = 0;
     for (int i = 0, cnt = 0; i < nver.size(); i++) {
         for (int j = 0; j < nver[i].size(); j++, cnt++) {
             if (!i || !j) continue;
-            // MatrixXd Bq(8, 8);
-            // Bq <<
-            //     nver[i - 1][j - 1].x, -nver[i - 1][j - 1].y, 1, 0,
-            //     nver[i - 1][j - 1].y, nver[i - 1][j - 1].x, 0, 1,
-            //     nver[i - 1][j].x, -nver[i - 1][j].y, 1, 0,
-            //     nver[i - 1][j].y, nver[i - 1][j].x, 0, 1,
-            //     nver[i][j - 1].x, -nver[i][j - 1].y, 1, 0,
-            //     nver[i][j - 1].y, nver[i][j - 1].x, 0, 1,
-            //     nver[i][j].x, -nver[i][j].y, 1, 0,
-            //     nver[i][j].y, nver[i][j].x, 0, 1;
-            int cur = cnt * 8 * 8;
+            int cur = cnt * 8;
             B.insert(cur, cur) = (i == 1);
             B.insert(cur + 1, cur + 1) = (j == 1);
+            Y.resize(Y.rows() + 8, 1);
+            Y << 0, 0;
 
             B.insert(cur + 2, cur + 2) = (i == 0);
-            B.insert(cur + 3, cur + 3) = 0;
+            B.insert(cur + 3, cur + 3) = (j == nver[i].size() - 1);
+            Y << 0, (j == nver[i].size() - 1 ? img.cols : 0);
 
-            B.insert(cur + 4, cur + 4) = 0;
+            B.insert(cur + 4, cur + 4) = (i == nver.size() - 1);
             B.insert(cur + 5, cur + 5) = (j == 0);
+            Y << (i == nver.size() - 1 ? img.rows : 0), 0;
 
-            B.insert(cur + 6, cur + 6) = 0;
-            B.insert(cur + 7, cur + 7) = 0;
+            B.insert(cur + 6, cur + 6) = (i == nver.size() - 1);
+            B.insert(cur + 7, cur + 7) = (j == nver[i].size() - 1);
+            Y << (i == nver.size() - 1 ? img.rows : 0), (j == nver[i].size() - 1 ? img.cols : 0);
         }
     }
-    // for (int j = 0; j < nver[0].size(); j++) {
-    //     E += nver[0][j].y * nver[0][j].y;
-    //     double de = (nver.back())[j].y - img.rows + 1;
-    //     E += de * de;
-    // }
-    // for (int i = 0; i < nver.size(); i++) {
-    //     E += nver[i][0].x * nver[i][0].x;
-    //     double de = nver[i].back().x - img.cols + 1;
-    //     E += de * de;
-    // }
-    return E;
 }
-*/
+
+double Energy::lineTerm() {
+
+}
 
 // #endif
