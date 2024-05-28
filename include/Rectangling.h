@@ -143,7 +143,7 @@ img(image) {
     showMesh(mesh, 1);
     
     mesh.callGL();
-
+    mesh.callEnergy();
 }
 
 void Rectangling::getRect(Rect &rect, DirectionType DType, BorderType BType, int seamLen, int seamEndp) {
