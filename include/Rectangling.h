@@ -142,7 +142,7 @@ img(image) {
     mesh.displace(dispV, dispH);
 
     showMesh(mesh, 1, 1);
-    mesh.callEnergy();
+    // mesh.callEnergy();
     mesh.callGL();
     showMesh(mesh, 1, 0);
 }

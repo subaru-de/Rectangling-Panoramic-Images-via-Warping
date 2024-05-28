@@ -151,21 +151,24 @@ void GLproc::getData(Mat &img, vecvecP &ver, vecvecP &nver, vector<GLfloat> &ver
         for (int j = 0; j < ver[i].size(); j++, cnt++) {
             // positions
             Point2f cur = nver[i][j];
-            cur.x /= (float)img.cols;
-            cur.y = img.rows - cur.y - 1;
-            cur.y /= (float)img.rows;
+            cur.x /= 1.0f * SCR_WIDTH;
+            cur.y = SCR_HEIGHT - cur.y - 1.0f;
+            cur.y /= 1.0f * SCR_HEIGHT;
             cur *= 2.0f;
             cur -= Point2f(1.0f, 1.0f);
             vertices.push_back(cur.x);
             vertices.push_back(cur.y);
             vertices.push_back(0.0f);
+            assert(cur.x >= -1 && cur.x < 1 && cur.y >= -1 && cur.y < 1);
+            // cout << cur << ' ';
 
             // texture Coord
             cur = ver[i][j];
-            cur.x /= (float)img.cols;
-            cur.y /= (float)img.rows;
+            cur.x /= 1.0f * SCR_WIDTH;
+            cur.y /= 1.0f * SCR_HEIGHT;
             vertices.push_back(cur.x);
             vertices.push_back(cur.y);
+            assert(cur.x >= 0 && cur.x <= 1 && cur.y >= 0 && cur.y <= 1);
             
             if (i && j) {
                 indices.push_back(cnt);
@@ -177,6 +180,7 @@ void GLproc::getData(Mat &img, vecvecP &ver, vecvecP &nver, vector<GLfloat> &ver
                 indices.push_back(cnt - ver[i].size() - 1);
             }
         }
+        // cout << '\n';
     }
 }
 

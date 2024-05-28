@@ -177,8 +177,9 @@ void Energy::convertV() {
         for (int j = 0; j < nver[i].size(); j++, cnt += 2) {
             nver[i][j].x = V(cnt, 0) + 0.5;
             nver[i][j].y = V(cnt + 1, 0) + 0.5;
-            cout << nver[i][j] << ' '<< V(cnt, 0) << ' ' << V(cnt + 1, 0) << '\n';
-        }
+            // cout << nver[i][j] << ' '<< V(cnt, 0) << ' ' << V(cnt + 1, 0) << '\n';
+            cout << nver[i][j] << ' ';
+        } cout << '\n';
     }
 }
 
