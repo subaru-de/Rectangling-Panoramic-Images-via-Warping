@@ -48,15 +48,15 @@ img(img) {
         for (int i = 0; i < totVerR; i++, x += disR) {
             y = 0;
             for (int j = 0; j < totVerC; j++, y += disC) {
-                ver[i][j] = Point(y, x);
+                ver[i][j] = Point(y + 0.5, x + 0.5);
                 nver[i][j] = ver[i][j];
             }
         }
     }
-
+    // cout << "------------- first of all ------------\n";
     // for (int i = 0; i < ver.size(); i++) {
     //     for (int j = 0; j < ver[i].size(); j++) {
-    //         cout << ver[i][j] << '\t';
+    //         cout << nver[i][j] << '\t';
     //     }
     //     cout << '\n';
     // }
@@ -64,10 +64,7 @@ img(img) {
 
 void Mesh::putMesh(Mat &img, bool showVer) {
     // put mesh
-    vecvecP &v = nver;
-    if (showVer) {
-        vecvecP &v = ver;
-    }
+    vecvecP &v = showVer ? ver : nver;
     for (int i = 0; i < v.size(); i++) {
         for (int j = 0; j < v[i].size(); j++) {
             if (i) {
@@ -99,6 +96,12 @@ void Mesh::callGL() {
 }
 
 void Mesh::callEnergy() {
+    // cout << "--------------- before ---------------\n";
+    // for (int i = 0; i < nver.size(); i++) {
+    //     for (int j = 0; j < nver[i].size(); j++) {
+    //         cout << nver[i][j] << ' ';
+    //     } cout << '\n';
+    // } cout << '\n';
     Energy energy(img, ver, nver);
 }
 

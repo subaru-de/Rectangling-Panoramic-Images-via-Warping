@@ -60,8 +60,8 @@ double Energy::getEnergy() {
     }
     double E = 0.0;
     VectorXd tmp = A * V;
-    E += tmp.dot(tmp);
-    tmp = B * V;
+    // E += tmp.dot(tmp);
+    tmp = B * V - Y.block(Y.rows() - MAXV, 0, MAXV, 1);
     E += lambdaBound * tmp.dot(tmp);
     // E += lambdaLine * lineTerm();
     return E;
@@ -69,6 +69,7 @@ double Energy::getEnergy() {
 
 void Energy::optimize() {
     SparseMatrix<double> AA = A.transpose() * A;
+    // SparseMatrix<double> AA = A;
     SparseMatrix<double> L(A.rows() + B.rows(), A.cols());
     // 竖直方向上 concat 矩阵 AA 和 B
     for (int k = 0; k < AA.outerSize(); k++) {
@@ -103,16 +104,23 @@ void Energy::convertV() {
         for (int j = 0; j < nver[i].size(); j++, cnt += 2) {
             nver[i][j].x = V(cnt, 0);
             nver[i][j].y = V(cnt + 1, 0);
+            cout << nver[i][j] << ' ';
         }
+        cout << '\n';
     }
+    cout << '\n';
 }
 
 void Energy::getV() {
     for (int i = 0, cnt = 0; i < nver.size(); i++) {
         for (int j = 0; j < nver[i].size(); j++, cnt += 2) {
             V.block<2, 1>(cnt, 0) << nver[i][j].x, nver[i][j].y;
+            cout << nver[i][j] << ' ';
         }
+        cout << '\n';
     }
+    cout << '\n';
+    // cout << V << '\n';
 }
 
 void Energy::getA() {
@@ -156,6 +164,7 @@ void Energy::getA() {
         }
     }
     A.makeCompressed();
+    A /= Nq;
 }
 
 void Energy::getB() {
@@ -163,26 +172,26 @@ void Energy::getB() {
     for (int i = 0, cnt = 0; i < nver.size(); i++) {
         for (int j = 0; j < nver[i].size(); j++, cnt += 2) {
             if (!i) {
-                B.insert(cnt, cnt) = 1;
-                Y(Y.rows() - MAXV + cnt) = 0;
+                B.insert(cnt + 1, cnt + 1) = 1;
+                Y(Y.rows() - MAXV + cnt + 1) = 0;
             }
             else if (i + 1 == nver.size()) {
+                B.insert(cnt + 1, cnt + 1) = 1;
+                Y(Y.rows() - MAXV + cnt + 1) = img.rows - 1;
+            }
+            else {
+                Y(Y.rows() - MAXV + cnt + 1) = 0;
+            }
+            if (!j) {
                 B.insert(cnt, cnt) = 1;
-                Y(Y.rows() - MAXV + cnt) = img.rows;
+                Y(Y.rows() - MAXV + cnt) = 0;
+            }
+            else if (j + 1 == nver[i].size()) {
+                B.insert(cnt, cnt) = 1;
+                Y(Y.rows() - MAXV + cnt) = img.cols - 1;
             }
             else {
                 Y(Y.rows() - MAXV + cnt) = 0;
-            }
-            if (!j) {
-                B.insert(cnt + 1, cnt + 1) = 1;
-                Y(Y.rows() - MAXV + cnt + 1) = 0;
-            }
-            else if (j + 1 == nver[i].size()) {
-                B.insert(cnt + 1, cnt + 1) = 1;
-                Y(Y.rows() - MAXV + cnt + 1) = img.cols;
-            }
-            else {
-                Y(Y.rows() - MAXV + cnt + 1) = 0;
             }
         }
     }
