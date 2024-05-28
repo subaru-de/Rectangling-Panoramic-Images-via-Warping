@@ -22,7 +22,7 @@ private:
     const double lambdaBound = 1e8;
     Mat &img;
     vecvecP &ver, &nver;
-    const int MAXNq, MAXV;
+    const int MAXNq, MAXV, MAXB;
     SparseMatrix<double> A, B, C;
     MatrixXd V, Y;
 public:
@@ -43,9 +43,10 @@ public:
 };
 
 Energy::Energy(Mat &img, vecvecP &ver, vecvecP &nver):
-MAXNq((ver.size() - 1) * (ver[0].size() - 1) * 8), MAXV(ver.size() * ver[0].size() * 2),
+MAXNq((ver.size() - 1) * (ver[0].size() - 1) * 8),
+MAXV(ver.size() * ver[0].size() * 2), MAXB((ver.size() + ver[0].size()) * 2),
 img(img), ver(ver), nver(nver),
-A(MAXNq, MAXV), B(MAXV, MAXV), C(MAXNq, MAXV),
+A(MAXNq, MAXV), B(MAXB, MAXV), C(MAXNq, MAXV),
 V(0, 1), Y(0, 1) {
     cout << getEnergy() << '\n';
     optimize();
@@ -63,7 +64,7 @@ double Energy::getEnergy() {
     // E += (V.transpose() * A.transpose() * A * V)(0, 0);
     VectorXd tmp = A * V;
     E += tmp.dot(tmp) / MAXNq;
-    tmp = B * V - Y.block(Y.rows() - MAXV, 0, MAXV, 1);
+    tmp = B * V - Y.block(Y.rows() - MAXB, 0, MAXB, 1);
     E += tmp.dot(tmp);
     // E += lambdaLine * lineTerm();
     return E;
@@ -83,11 +84,25 @@ void Energy::optimize() {
 
 
     // SparseMatrix<double> AA = A;
-    SparseMatrix<double> L(A.rows() + B.rows(), A.cols());
+    cout << AA.rows() << "qwqwq\n";
+    SparseMatrix<double> L(AA.rows() + B.rows(), AA.cols());
+    MatrixXd YY(Y.rows() + AA.rows(), 1);
+    YY << MatrixXd::Zero(AA.rows(), 1), Y;
+    Y = YY;
     // 竖直方向上 concat 矩阵 AA 和 B
     for (int k = 0; k < AA.outerSize(); k++) {
         for (SparseMatrix<double>::InnerIterator it(AA, k); it; ++it) {
             L.insert(it.row(), it.col()) = it.value();
+        }
+    }
+    bool flag = 0;
+    for (int k = 0; k < B.outerSize(); k++) {
+        for (SparseMatrix<double>::InnerIterator it(B, k); it; ++it) {
+            L.insert(it.row() + AA.rows(), it.col()) = it.value();
+            if (it.value() != 0) {
+                // cout << it.value() << '\t' << it.row() << ' ' << it.col() << '\n';
+                flag = 1;
+            }
         }
     }
     outfile.open("/home/nxte/codes/Rectangling-Panoramic-Images-via-Warping/include/matrix_output.txt");
@@ -98,40 +113,73 @@ void Energy::optimize() {
     } else {
         std::cerr << "无法打开文件" << std::endl;
     }
-    bool flag = 0;
-    for (int k = 0; k < B.outerSize(); k++) {
-        for (SparseMatrix<double>::InnerIterator it(B, k); it; ++it) {
-            L.insert(it.row() + A.rows(), it.col()) = it.value();
-            if (it.value()) flag = 1;
-        }
-    }
     L.makeCompressed();
+    // cout << L.rows() << ' ' << L.cols() << " ---------------\n";
     assert(flag == 1);
+
+    // // 创建一个正则化参数
+    // double lambda = 0.1;
+
+    // // 创建正则化项
+    // Eigen::SparseMatrix<double> I(L.cols(), L.cols());
+    // I.setIdentity();
+
+    // // 构造增强矩阵
+    // Eigen::SparseMatrix<double> L_reg = Eigen::SparseMatrix<double>(L.rows() + L.cols(), L.cols());
+    // Eigen::MatrixXd Y_reg = Eigen::MatrixXd(L.rows() + L.cols(), 1);
+
+    // // 设置上半部分
+    // for (int k = 0; k < L.outerSize(); ++k) {
+    //     for (Eigen::SparseMatrix<double>::InnerIterator it(L, k); it; ++it) {
+    //         L_reg.insert(it.row(), it.col()) = it.value();
+    //     }
+    // }
+
+    // // 设置下半部分
+    // for (int k = 0; k < I.outerSize(); ++k) {
+    //     for (Eigen::SparseMatrix<double>::InnerIterator it(I, k); it; ++it) {
+    //         L_reg.insert(L.rows() + it.row(), it.col()) = lambda * it.value();
+    //     }
+    // }
+    // L_reg.makeCompressed();
+
+    // Y_reg.topRows(L.rows()) = Y;
+    // Y_reg.bottomRows(L.cols()).setZero();
+
     // L * V = Y
     SparseQR<SparseMatrix<double>, COLAMDOrdering<int>> solver;
     solver.compute(L);
+    // solver.compute(AA);
     if (solver.info() != Success) {
         std::cerr << "Decomposition failed!" << std::endl;
         return;
     }
     V = solver.solve(Y);
+    // V = solver.solve(MatrixXd::Zero(AA.rows(), 1));
     if (solver.info() != Success) {
         std::cerr << "Solving failed!" << std::endl;
         return;
     }
+    // V = (L.transpose() * L).inverse() * L.transpose();
+
+    // 计算条件数（估计）
+    Eigen::SparseMatrix<double> R = solver.matrixR();
+    Eigen::VectorXd diagR = R.diagonal();
+    double cond_number = diagR.array().abs().maxCoeff() / diagR.array().abs().minCoeff();
+
+    std::cout << "Estimated condition number: " << cond_number << std::endl;
+
     convertV();
 }
 
 void Energy::convertV() {
     for (int i = 0, cnt = 0; i < nver.size(); i++) {
         for (int j = 0; j < nver[i].size(); j++, cnt += 2) {
-            nver[i][j].x = V(cnt, 0);
-            nver[i][j].y = V(cnt + 1, 0);
-            cout << nver[i][j] << ' ';
+            nver[i][j].x = V(cnt, 0) + 0.5;
+            nver[i][j].y = V(cnt + 1, 0) + 0.5;
+            cout << nver[i][j] << ' '<< V(cnt, 0) << ' ' << V(cnt + 1, 0) << '\n';
         }
-        cout << '\n';
     }
-    cout << '\n';
 }
 
 void Energy::getV() {
@@ -181,8 +229,8 @@ void Energy::getA() {
                 A.insert(uo, vo) = Aq(u, 6);
                 A.insert(uo, vo + 1) = Aq(u, 7);
             }
-            Y.resize(Y.rows() + 8, 1);
-            Y.block<8, 1>(Y.rows() - 8, 0) << MatrixXd::Zero(8, 1);
+            // Y.resize(Y.rows() + 8, 1);
+            // Y.block<8, 1>(Y.rows() - 8, 0) << MatrixXd::Zero(8, 1);
             Nq++;
         }
     }
@@ -192,33 +240,33 @@ void Energy::getA() {
 }
 
 void Energy::getB() {
-    Y.resize(Y.rows() + MAXV, 1);
-    for (int i = 0, cnt = 0; i < nver.size(); i++) {
-        for (int j = 0; j < nver[i].size(); j++, cnt += 2) {
+    Y.resize(Y.rows() + MAXB, 1);
+    int cnt = 0;
+    for (int i = 0, pcnt = 0; i < nver.size(); i++) {
+        for (int j = 0; j < nver[i].size(); j++, pcnt++) {
             if (!i) {
-                B.insert(cnt + 1, cnt + 1) = lambdaBound;
-                Y(Y.rows() - MAXV + cnt + 1) = 0;
+                B.insert(cnt, pcnt * 2 + 1) = lambdaBound;
+                Y(Y.rows() - MAXB + cnt) = 0;
+                cnt++;
             }
             else if (i + 1 == nver.size()) {
-                B.insert(cnt + 1, cnt + 1) = lambdaBound;
-                Y(Y.rows() - MAXV + cnt + 1) = lambdaBound * (img.rows - 1);
-            }
-            else {
-                Y(Y.rows() - MAXV + cnt + 1) = 0;
+                B.insert(cnt, pcnt * 2 + 1) = lambdaBound;
+                Y(Y.rows() - MAXB + cnt) = lambdaBound * (img.rows - 1);
+                cnt++;
             }
             if (!j) {
-                B.insert(cnt, cnt) = lambdaBound;
-                Y(Y.rows() - MAXV + cnt) = 0;
+                B.insert(cnt, pcnt * 2) = lambdaBound;
+                Y(Y.rows() - MAXB + cnt) = 0;
+                cnt++;
             }
             else if (j + 1 == nver[i].size()) {
-                B.insert(cnt, cnt) = lambdaBound;
-                Y(Y.rows() - MAXV + cnt) = lambdaBound * (img.cols - 1);
-            }
-            else {
-                Y(Y.rows() - MAXV + cnt) = 0;
+                B.insert(cnt, pcnt * 2) = lambdaBound;
+                Y(Y.rows() - MAXB + cnt) = lambdaBound * (img.cols - 1);
+                cnt++;
             }
         }
     }
+    assert(cnt == MAXB);
     B.makeCompressed();
 }
 
