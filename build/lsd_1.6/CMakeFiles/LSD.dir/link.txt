@@ -1,2 +1,2 @@
-/usr/bin/ar qc libLSD.a CMakeFiles/LSD.dir/lsd.c.o
+/usr/bin/ar qc libLSD.a CMakeFiles/LSD.dir/lsd.cpp.o CMakeFiles/LSD.dir/lsd_cmd.cpp.o
 /usr/bin/ranlib libLSD.a

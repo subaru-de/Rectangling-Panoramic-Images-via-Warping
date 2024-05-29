@@ -697,7 +697,9 @@ CMakeFiles/Rectangling.dir/Rectangling.cpp.o: ../Rectangling.cpp \
   /usr/include/eigen3/Eigen/src/IterativeLinearSolvers/LeastSquareConjugateGradient.h \
   /usr/include/eigen3/Eigen/src/IterativeLinearSolvers/BiCGSTAB.h \
   /usr/include/eigen3/Eigen/src/IterativeLinearSolvers/IncompleteLUT.h \
-  /usr/include/eigen3/Eigen/src/IterativeLinearSolvers/IncompleteCholesky.h
+  /usr/include/eigen3/Eigen/src/IterativeLinearSolvers/IncompleteCholesky.h \
+  ../include/Line.h \
+  ../lsd_1.6/lsd.h
 
 
 /usr/include/eigen3/Eigen/src/IterativeLinearSolvers/IncompleteLUT.h:
@@ -775,6 +777,8 @@ CMakeFiles/Rectangling.dir/Rectangling.cpp.o: ../Rectangling.cpp \
 /usr/include/eigen3/Eigen/src/Eigenvalues/ComplexSchur.h:
 
 /usr/include/eigen3/Eigen/src/Eigenvalues/GeneralizedSelfAdjointEigenSolver.h:
+
+../lsd_1.6/lsd.h:
 
 /usr/include/eigen3/Eigen/src/Eigenvalues/SelfAdjointEigenSolver.h:
 
@@ -1647,6 +1651,8 @@ CMakeFiles/Rectangling.dir/Rectangling.cpp.o: ../Rectangling.cpp \
 /usr/include/c++/11/bits/stl_tree.h:
 
 /usr/include/c++/11/bits/stl_map.h:
+
+../include/Line.h:
 
 /usr/local/include/opencv4/opencv2/dnn/layer.hpp:
 

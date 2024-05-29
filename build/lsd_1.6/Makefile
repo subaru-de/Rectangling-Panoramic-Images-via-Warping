@@ -130,29 +130,53 @@ LSD/fast:
 	cd /home/nxte/codes/Rectangling-Panoramic-Images-via-Warping/build && $(MAKE) $(MAKESILENT) -f lsd_1.6/CMakeFiles/LSD.dir/build.make lsd_1.6/CMakeFiles/LSD.dir/build
 .PHONY : LSD/fast
 
-lsd.o: lsd.c.o
+lsd.o: lsd.cpp.o
 .PHONY : lsd.o
 
 # target to build an object file
-lsd.c.o:
-	cd /home/nxte/codes/Rectangling-Panoramic-Images-via-Warping/build && $(MAKE) $(MAKESILENT) -f lsd_1.6/CMakeFiles/LSD.dir/build.make lsd_1.6/CMakeFiles/LSD.dir/lsd.c.o
-.PHONY : lsd.c.o
+lsd.cpp.o:
+	cd /home/nxte/codes/Rectangling-Panoramic-Images-via-Warping/build && $(MAKE) $(MAKESILENT) -f lsd_1.6/CMakeFiles/LSD.dir/build.make lsd_1.6/CMakeFiles/LSD.dir/lsd.cpp.o
+.PHONY : lsd.cpp.o
 
-lsd.i: lsd.c.i
+lsd.i: lsd.cpp.i
 .PHONY : lsd.i
 
 # target to preprocess a source file
-lsd.c.i:
-	cd /home/nxte/codes/Rectangling-Panoramic-Images-via-Warping/build && $(MAKE) $(MAKESILENT) -f lsd_1.6/CMakeFiles/LSD.dir/build.make lsd_1.6/CMakeFiles/LSD.dir/lsd.c.i
-.PHONY : lsd.c.i
+lsd.cpp.i:
+	cd /home/nxte/codes/Rectangling-Panoramic-Images-via-Warping/build && $(MAKE) $(MAKESILENT) -f lsd_1.6/CMakeFiles/LSD.dir/build.make lsd_1.6/CMakeFiles/LSD.dir/lsd.cpp.i
+.PHONY : lsd.cpp.i
 
-lsd.s: lsd.c.s
+lsd.s: lsd.cpp.s
 .PHONY : lsd.s
 
 # target to generate assembly for a file
-lsd.c.s:
-	cd /home/nxte/codes/Rectangling-Panoramic-Images-via-Warping/build && $(MAKE) $(MAKESILENT) -f lsd_1.6/CMakeFiles/LSD.dir/build.make lsd_1.6/CMakeFiles/LSD.dir/lsd.c.s
-.PHONY : lsd.c.s
+lsd.cpp.s:
+	cd /home/nxte/codes/Rectangling-Panoramic-Images-via-Warping/build && $(MAKE) $(MAKESILENT) -f lsd_1.6/CMakeFiles/LSD.dir/build.make lsd_1.6/CMakeFiles/LSD.dir/lsd.cpp.s
+.PHONY : lsd.cpp.s
+
+lsd_cmd.o: lsd_cmd.cpp.o
+.PHONY : lsd_cmd.o
+
+# target to build an object file
+lsd_cmd.cpp.o:
+	cd /home/nxte/codes/Rectangling-Panoramic-Images-via-Warping/build && $(MAKE) $(MAKESILENT) -f lsd_1.6/CMakeFiles/LSD.dir/build.make lsd_1.6/CMakeFiles/LSD.dir/lsd_cmd.cpp.o
+.PHONY : lsd_cmd.cpp.o
+
+lsd_cmd.i: lsd_cmd.cpp.i
+.PHONY : lsd_cmd.i
+
+# target to preprocess a source file
+lsd_cmd.cpp.i:
+	cd /home/nxte/codes/Rectangling-Panoramic-Images-via-Warping/build && $(MAKE) $(MAKESILENT) -f lsd_1.6/CMakeFiles/LSD.dir/build.make lsd_1.6/CMakeFiles/LSD.dir/lsd_cmd.cpp.i
+.PHONY : lsd_cmd.cpp.i
+
+lsd_cmd.s: lsd_cmd.cpp.s
+.PHONY : lsd_cmd.s
+
+# target to generate assembly for a file
+lsd_cmd.cpp.s:
+	cd /home/nxte/codes/Rectangling-Panoramic-Images-via-Warping/build && $(MAKE) $(MAKESILENT) -f lsd_1.6/CMakeFiles/LSD.dir/build.make lsd_1.6/CMakeFiles/LSD.dir/lsd_cmd.cpp.s
+.PHONY : lsd_cmd.cpp.s
 
 # Help Target
 help:
@@ -166,6 +190,9 @@ help:
 	@echo "... lsd.o"
 	@echo "... lsd.i"
 	@echo "... lsd.s"
+	@echo "... lsd_cmd.o"
+	@echo "... lsd_cmd.i"
+	@echo "... lsd_cmd.s"
 .PHONY : help
 
 

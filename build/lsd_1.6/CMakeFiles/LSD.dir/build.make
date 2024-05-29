@@ -69,31 +69,47 @@ include lsd_1.6/CMakeFiles/LSD.dir/progress.make
 # Include the compile flags for this target's objects.
 include lsd_1.6/CMakeFiles/LSD.dir/flags.make
 
-lsd_1.6/CMakeFiles/LSD.dir/lsd.c.o: lsd_1.6/CMakeFiles/LSD.dir/flags.make
-lsd_1.6/CMakeFiles/LSD.dir/lsd.c.o: ../lsd_1.6/lsd.c
-lsd_1.6/CMakeFiles/LSD.dir/lsd.c.o: lsd_1.6/CMakeFiles/LSD.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/nxte/codes/Rectangling-Panoramic-Images-via-Warping/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Building C object lsd_1.6/CMakeFiles/LSD.dir/lsd.c.o"
-	cd /home/nxte/codes/Rectangling-Panoramic-Images-via-Warping/build/lsd_1.6 && /usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT lsd_1.6/CMakeFiles/LSD.dir/lsd.c.o -MF CMakeFiles/LSD.dir/lsd.c.o.d -o CMakeFiles/LSD.dir/lsd.c.o -c /home/nxte/codes/Rectangling-Panoramic-Images-via-Warping/lsd_1.6/lsd.c
+lsd_1.6/CMakeFiles/LSD.dir/lsd.cpp.o: lsd_1.6/CMakeFiles/LSD.dir/flags.make
+lsd_1.6/CMakeFiles/LSD.dir/lsd.cpp.o: ../lsd_1.6/lsd.cpp
+lsd_1.6/CMakeFiles/LSD.dir/lsd.cpp.o: lsd_1.6/CMakeFiles/LSD.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/nxte/codes/Rectangling-Panoramic-Images-via-Warping/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Building CXX object lsd_1.6/CMakeFiles/LSD.dir/lsd.cpp.o"
+	cd /home/nxte/codes/Rectangling-Panoramic-Images-via-Warping/build/lsd_1.6 && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT lsd_1.6/CMakeFiles/LSD.dir/lsd.cpp.o -MF CMakeFiles/LSD.dir/lsd.cpp.o.d -o CMakeFiles/LSD.dir/lsd.cpp.o -c /home/nxte/codes/Rectangling-Panoramic-Images-via-Warping/lsd_1.6/lsd.cpp
 
-lsd_1.6/CMakeFiles/LSD.dir/lsd.c.i: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing C source to CMakeFiles/LSD.dir/lsd.c.i"
-	cd /home/nxte/codes/Rectangling-Panoramic-Images-via-Warping/build/lsd_1.6 && /usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /home/nxte/codes/Rectangling-Panoramic-Images-via-Warping/lsd_1.6/lsd.c > CMakeFiles/LSD.dir/lsd.c.i
+lsd_1.6/CMakeFiles/LSD.dir/lsd.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/LSD.dir/lsd.cpp.i"
+	cd /home/nxte/codes/Rectangling-Panoramic-Images-via-Warping/build/lsd_1.6 && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/nxte/codes/Rectangling-Panoramic-Images-via-Warping/lsd_1.6/lsd.cpp > CMakeFiles/LSD.dir/lsd.cpp.i
 
-lsd_1.6/CMakeFiles/LSD.dir/lsd.c.s: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling C source to assembly CMakeFiles/LSD.dir/lsd.c.s"
-	cd /home/nxte/codes/Rectangling-Panoramic-Images-via-Warping/build/lsd_1.6 && /usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/nxte/codes/Rectangling-Panoramic-Images-via-Warping/lsd_1.6/lsd.c -o CMakeFiles/LSD.dir/lsd.c.s
+lsd_1.6/CMakeFiles/LSD.dir/lsd.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/LSD.dir/lsd.cpp.s"
+	cd /home/nxte/codes/Rectangling-Panoramic-Images-via-Warping/build/lsd_1.6 && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/nxte/codes/Rectangling-Panoramic-Images-via-Warping/lsd_1.6/lsd.cpp -o CMakeFiles/LSD.dir/lsd.cpp.s
+
+lsd_1.6/CMakeFiles/LSD.dir/lsd_cmd.cpp.o: lsd_1.6/CMakeFiles/LSD.dir/flags.make
+lsd_1.6/CMakeFiles/LSD.dir/lsd_cmd.cpp.o: ../lsd_1.6/lsd_cmd.cpp
+lsd_1.6/CMakeFiles/LSD.dir/lsd_cmd.cpp.o: lsd_1.6/CMakeFiles/LSD.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/nxte/codes/Rectangling-Panoramic-Images-via-Warping/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Building CXX object lsd_1.6/CMakeFiles/LSD.dir/lsd_cmd.cpp.o"
+	cd /home/nxte/codes/Rectangling-Panoramic-Images-via-Warping/build/lsd_1.6 && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT lsd_1.6/CMakeFiles/LSD.dir/lsd_cmd.cpp.o -MF CMakeFiles/LSD.dir/lsd_cmd.cpp.o.d -o CMakeFiles/LSD.dir/lsd_cmd.cpp.o -c /home/nxte/codes/Rectangling-Panoramic-Images-via-Warping/lsd_1.6/lsd_cmd.cpp
+
+lsd_1.6/CMakeFiles/LSD.dir/lsd_cmd.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/LSD.dir/lsd_cmd.cpp.i"
+	cd /home/nxte/codes/Rectangling-Panoramic-Images-via-Warping/build/lsd_1.6 && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/nxte/codes/Rectangling-Panoramic-Images-via-Warping/lsd_1.6/lsd_cmd.cpp > CMakeFiles/LSD.dir/lsd_cmd.cpp.i
+
+lsd_1.6/CMakeFiles/LSD.dir/lsd_cmd.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/LSD.dir/lsd_cmd.cpp.s"
+	cd /home/nxte/codes/Rectangling-Panoramic-Images-via-Warping/build/lsd_1.6 && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/nxte/codes/Rectangling-Panoramic-Images-via-Warping/lsd_1.6/lsd_cmd.cpp -o CMakeFiles/LSD.dir/lsd_cmd.cpp.s
 
 # Object files for target LSD
 LSD_OBJECTS = \
-"CMakeFiles/LSD.dir/lsd.c.o"
+"CMakeFiles/LSD.dir/lsd.cpp.o" \
+"CMakeFiles/LSD.dir/lsd_cmd.cpp.o"
 
 # External object files for target LSD
 LSD_EXTERNAL_OBJECTS =
 
-lsd_1.6/libLSD.a: lsd_1.6/CMakeFiles/LSD.dir/lsd.c.o
+lsd_1.6/libLSD.a: lsd_1.6/CMakeFiles/LSD.dir/lsd.cpp.o
+lsd_1.6/libLSD.a: lsd_1.6/CMakeFiles/LSD.dir/lsd_cmd.cpp.o
 lsd_1.6/libLSD.a: lsd_1.6/CMakeFiles/LSD.dir/build.make
 lsd_1.6/libLSD.a: lsd_1.6/CMakeFiles/LSD.dir/link.txt
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir=/home/nxte/codes/Rectangling-Panoramic-Images-via-Warping/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Linking C static library libLSD.a"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir=/home/nxte/codes/Rectangling-Panoramic-Images-via-Warping/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_3) "Linking CXX static library libLSD.a"
 	cd /home/nxte/codes/Rectangling-Panoramic-Images-via-Warping/build/lsd_1.6 && $(CMAKE_COMMAND) -P CMakeFiles/LSD.dir/cmake_clean_target.cmake
 	cd /home/nxte/codes/Rectangling-Panoramic-Images-via-Warping/build/lsd_1.6 && $(CMAKE_COMMAND) -E cmake_link_script CMakeFiles/LSD.dir/link.txt --verbose=$(VERBOSE)
 

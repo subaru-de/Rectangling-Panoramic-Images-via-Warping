@@ -10,7 +10,9 @@
 // #include <eigen3/Eigen/Sparse>
 // #include <eigen3/Eigen/Dense>
 #include <eigen3/Eigen/Eigen>
+#include <Line.h>
 
+using std::pair;
 using std::cout;
 using std::string;
 using namespace cv;
@@ -25,6 +27,7 @@ private:
     const int MAXNq, MAXV, MAXB;
     SparseMatrix<double> A, B, C;
     MatrixXd V, Y;
+    vector<vector<vector<lin>>> lines;
 public:
     Energy(Mat &img, vecvecP &ver, vecvecP &nver);
     void getV();
@@ -59,6 +62,7 @@ double Energy::getEnergy() {
         getV();
         getA();
         getB();
+        getC();
     }
     double E = 0.0;
     // E += (V.transpose() * A.transpose() * A * V)(0, 0);
@@ -272,7 +276,9 @@ void Energy::getB() {
     B.makeCompressed();
 }
 
-void Energy::getC() {}
+void Energy::getC() {
+    Line(img, ver);
+}
 
 // double Energy::shapeTerm() {
 //     double E = 0;

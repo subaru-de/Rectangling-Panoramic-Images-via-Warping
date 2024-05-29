@@ -634,4 +634,6 @@ CMakeFiles/Rectangling.dir/Rectangling.cpp.o: \
  /usr/include/eigen3/Eigen/src/IterativeLinearSolvers/LeastSquareConjugateGradient.h \
  /usr/include/eigen3/Eigen/src/IterativeLinearSolvers/BiCGSTAB.h \
  /usr/include/eigen3/Eigen/src/IterativeLinearSolvers/IncompleteLUT.h \
- /usr/include/eigen3/Eigen/src/IterativeLinearSolvers/IncompleteCholesky.h
+ /usr/include/eigen3/Eigen/src/IterativeLinearSolvers/IncompleteCholesky.h \
+ /home/nxte/codes/Rectangling-Panoramic-Images-via-Warping/include/Line.h \
+ /home/nxte/codes/Rectangling-Panoramic-Images-via-Warping/lsd_1.6/./lsd.h
