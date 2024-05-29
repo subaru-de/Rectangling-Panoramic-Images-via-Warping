@@ -85,7 +85,7 @@ void Energy::optimize() {
     // SparseMatrix<double> AA = A;
 
     double preEnergy = 1e18, E = 1e18;
-    for (int iter = 0; iter < 1; iter++) {
+    for (int iter = 0; iter < 10; iter++) {
         // cout << iter << '\n';
         getC();
         // cout << "quq\n";
@@ -168,7 +168,7 @@ void Energy::convertV() {
         for (int j = 0; j < nver[i].size(); j++, cnt += 2) {
             nver[i][j].x = V(cnt, 0) + 0.5;
             nver[i][j].y = V(cnt + 1, 0) + 0.5;
-            cout << i << ' ' << j << ' ' << nver[i][j] << '\n';
+            // cout << i << ' ' << j << ' ' << nver[i][j] << '\n';
             assert(nver[i][j].x >= 0 && nver[i][j].x < img.cols);
             assert(nver[i][j].y >= 0 && nver[i][j].y < img.rows);
         }
