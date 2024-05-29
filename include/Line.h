@@ -25,14 +25,14 @@ private:
     Mat &img;
     vecvecP &ver;
 public:
-    Line(Mat &img, vecvecP &ver);
+    Line(Mat &img, vecvecP &ver, vector<vector<vector<lin>>> &lines);
     double cross(Point2d A, Point2d B, Point2d C);
     bool onSegment(Point2d A, Point2d B, Point2d C);
     bool doIntersect(lin l1, lin l2);
     Point2d getIntersection(lin l1, lin l2);
 };
 
-Line::Line(Mat &img, vecvecP &ver):
+Line::Line(Mat &img, vecvecP &ver, vector<vector<vector<lin>>> &lines):
 img(img), ver(ver) {
     Mat grayImg;
     cvtColor(img, grayImg, COLOR_BGR2GRAY);
@@ -62,23 +62,71 @@ img(img), ver(ver) {
     imshow("lines", lineImg);
     waitKey(0);
 
-    vector<vector<vector<lin>>> lines;
     lines.resize(ver.size() - 1, vector<vector<lin>>(ver[0].size() - 1, vector<lin>()));
     for (int i = 1; i < ver.size(); i++) {
         for (int j = 1; j < ver[i].size(); j++) {
-            vector<Point2d> contour;
+            vector<Point2f> contour;
             Point2d tl = ver[i - 1][j - 1];
             Point2d tr = ver[i - 1][j];
-            Point2d bl = ver[i][j - 1];
             Point2d br = ver[i][j];
+            Point2d bl = ver[i][j - 1];
             contour.push_back(tl);
             contour.push_back(tr);
-            contour.push_back(bl);
             contour.push_back(br);
+            contour.push_back(bl);
+
+            const int eps = 1e-6;
             for (int k = 0; k < cntLines; k++) {
-                double flag1 = pointPolygonTest(contour, Point2d(lsdLines[k * 7], lsdLines[k * 7 + 1]), 0);
-                double flag2 = pointPolygonTest(contour, Point2d(lsdLines[k * 7 + 2], lsdLines[k * 7 + 3]), 0);
-                
+                Point2d s = Point2d(lsdLines[k * 7], lsdLines[k * 7 + 1]);
+                Point2d t = Point2d(lsdLines[k * 7 + 2], lsdLines[k * 7 + 3]);
+                double flag1 = pointPolygonTest(contour, s, 0);
+                double flag2 = pointPolygonTest(contour, t, 0);
+                // 都在内部
+                if (flag1 >= 0 && flag2 >= 0) {
+                    lines[i][j].push_back(lin(s, t));
+                }
+                else if (flag1 >= 0 || flag2 >= 0) {
+                    Point2d ins, de;
+                    if (doIntersect(lin(tl, tr), lin(s, t))) {
+                        ins = getIntersection(lin(tl, tr), lin(s, t));
+                        de = (flag1 ? s : t) - ins;
+                        if (abs(de.x) > eps && abs(de.y) > eps) lines[i][j].push_back(lin(flag1 ? s : t, ins));
+                    }
+                    else if (doIntersect(lin(tr, br), lin(s, t))) {
+                        ins = getIntersection(lin(tr, br), lin(s, t));
+                        de = (flag1 ? s : t) - ins;
+                        if (abs(de.x) > eps && abs(de.y) > eps) lines[i][j].push_back(lin(flag1 ? s : t, ins));
+                    }
+                    else if (doIntersect(lin(bl, br), lin(s, t))) {
+                        ins = getIntersection(lin(bl, br), lin(s, t));
+                        de = (flag1 ? s : t) - ins;
+                        if (abs(de.x) > eps && abs(de.y) > eps) lines[i][j].push_back(lin(flag1 ? s : t, ins));
+                    }
+                    else if (doIntersect(lin(tl, bl), lin(s, t))) {
+                        ins = getIntersection(lin(tl, bl), lin(s, t));
+                        de = (flag1 ? s : t) - ins;
+                        if (abs(de.x) > eps && abs(de.y) > eps) lines[i][j].push_back(lin(flag1 ? s : t, ins));
+                    }
+                }
+                else {
+                    Point2d ins1(-1, -1), ins2(-1, -1), de;
+                    if (doIntersect(lin(tl, tr), lin(s, t))) {
+                        (ins1.x == -1 ? ins1 : ins2) = getIntersection(lin(tl, tr), lin(s, t));
+                    }
+                    if (doIntersect(lin(tr, br), lin(s, t))) {
+                        (ins1.x == -1 ? ins1 : ins2) = getIntersection(lin(tr, br), lin(s, t));
+                    }
+                    if (doIntersect(lin(bl, br), lin(s, t))) {
+                        (ins1.x == -1 ? ins1 : ins2) = getIntersection(lin(bl, br), lin(s, t));
+                    }
+                    if (doIntersect(lin(tl, bl), lin(s, t))) {
+                        (ins1.x == -1 ? ins1 : ins2) = getIntersection(lin(tl, bl), lin(s, t));
+                    }
+                    if (ins1.x != -1 && ins2.x != -1) {
+                        de = ins1 - ins2;
+                        if (abs(de.x) > eps && abs(de.y) > eps) lines[i][j].push_back(lin(ins1, ins2));
+                    }
+                }
             }
         }
     }
