@@ -8,4 +8,4 @@ target_include_directories(
     "./"
 )
 
-# SET(CMAKE_BUILD_TYPE "Release")
+SET(CMAKE_BUILD_TYPE "Release")

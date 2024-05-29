@@ -6,5 +6,5 @@ CXX_DEFINES =
 
 CXX_INCLUDES = -I/home/nxte/codes/Rectangling-Panoramic-Images-via-Warping/include -I/usr/local/include/opencv4 -I/home/nxte/codes/Rectangling-Panoramic-Images-via-Warping/lsd_1.6/.
 
-CXX_FLAGS = 
+CXX_FLAGS = -O3 -DNDEBUG
 

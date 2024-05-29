@@ -27,4 +27,4 @@ add_subdirectory(lsd_1.6)
 target_link_libraries(Rectangling LSD)
 
 
-# SET(CMAKE_BUILD_TYPE "Release")
+SET(CMAKE_BUILD_TYPE "Release")

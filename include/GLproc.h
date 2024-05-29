@@ -63,7 +63,7 @@ ver(ver), nver(nver) {
     SCR_WIDTH = img.cols;
     SCR_HEIGHT = img.rows;
 
-    GLFWwindow* window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "Source Mesh", NULL, NULL);
+    GLFWwindow* window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "Result Image", NULL, NULL);
     if (window == NULL) {
         cout << "Failed to create GLFW window" << '\n';
         glfwTerminate();
