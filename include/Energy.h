@@ -1,5 +1,6 @@
 // #ifndef Energy
 // #define Energy
+#include <cmath>
 #include <string>
 #include <fstream>
 #include <iostream>
@@ -22,18 +23,28 @@ class Energy {
 private:
     const double lambdaLine = 100.0;
     const double lambdaBound = 1e8;
+    
+    const int cntBin = 50;
+    const double alpha = acos(-1) / cntBin;
     Mat &img;
     vecvecP &ver, &nver;
     const int MAXNq, MAXV, MAXB;
     SparseMatrix<double> A, B, C;
     MatrixXd V, Y;
     vector<vector<vector<lin>>> lines;
+    vector<vector<vector<MatrixXd>>> F;
+    vector<vector<vector<int>>> bin;
+    double theta[cntBin];
+    int numInBin[cntBin];
+    int totL;
 public:
     Energy(Mat &img, vecvecP &ver, vecvecP &nver);
+    void init();
     void getV();
     void getA();
     void getB();
     void getC();
+    void getTheta(vector<vector<vector<lin>>> &lines, vector<vector<vector<MatrixXd>>> &F);
     double getEnergy();
     void optimize();
     void convertV();
@@ -49,21 +60,15 @@ Energy::Energy(Mat &img, vecvecP &ver, vecvecP &nver):
 MAXNq((ver.size() - 1) * (ver[0].size() - 1) * 8),
 MAXV(ver.size() * ver[0].size() * 2), MAXB((ver.size() + ver[0].size()) * 2),
 img(img), ver(ver), nver(nver),
-A(MAXNq, MAXV), B(MAXB, MAXV), C(MAXNq, MAXV),
-V(0, 1), Y(0, 1) {
+A(MAXNq, MAXV), B(MAXB, MAXV), C(0, MAXV),
+V(MAXV, 1), Y(0, 1) {
+    init();
     cout << getEnergy() << '\n';
     optimize();
     cout << getEnergy() << '\n';
 }
 
 double Energy::getEnergy() {
-    if (!V.rows()) {
-        V.resize(MAXV, 1);
-        getV();
-        getA();
-        getB();
-        getC();
-    }
     double E = 0.0;
     // E += (V.transpose() * A.transpose() * A * V)(0, 0);
     VectorXd tmp = A * V;
@@ -240,8 +245,8 @@ void Energy::getA() {
             Nq++;
         }
     }
+    A /= Nq;
     A.makeCompressed();
-    // A /= Nq;
     assert(Nq * 8 == MAXNq);
 }
 
@@ -277,9 +282,89 @@ void Energy::getB() {
 }
 
 void Energy::getC() {
-    vector<vector<vector<lin>>> lines;
-    vector<vector<vector<MatrixXd>>> F;
+    for (int i = 0; i < cntBin; i++) {
+        theta[i] = 0;
+    }
+    getTheta(lines, F);
+    C.resize(totL * 2, MAXV);
+    for (int i = 0, cnt = 0, Nl = 0; i < ver.size(); i++) {
+        for (int j = 0; j < ver[i].size(); j++, cnt++) {
+            for (int k = 0; k < lines[i][j].size(); k++, Nl++) {
+                lin &l = lines[i][j][k];
+                MatrixXd R(2, 2), e(2, 1);
+                int &m = bin[i][j][k];
+                R << cos(theta[m]), -sin(theta[m]), sin(theta[m]), cos(theta[m]);
+                e << l.second.x - l.first.x, l.second.y - l.first.y;
+                MatrixXd Cl = R * e * (e.transpose() * e).inverse() * e.transpose() * R.transpose() - MatrixXd::Identity(2, 2);
+                // Ce = CF * Vq, C is Cl above
+                // Cl(2, 8)
+                Cl = Cl * F[i][j][k];
+                for (int u = 0, uo, vo; u < 2; u++) {
+                    uo = Nl * 2 + u;
+                    vo = ((i - 1) * ver[i].size() + j - 1) * 2;
+                    C.insert(uo, vo) = Cl[u][0];
+                    C.insert(uo, vo + 1) = Cl[u][1];
+                    
+                    vo = ((i - 1) * ver[i].size() + j) * 2;
+                    C.insert(uo, vo) = Cl[u][2];
+                    C.insert(uo, vo + 1) = Cl[u][3];
+
+                    vo = (i * ver[i].size() + j - 1) * 2;
+                    C.insert(uo, vo) = Cl[u][4];
+                    C.insert(uo, vo + 1) = Cl[u][5];
+
+                    vo = (i * ver[i].size() + j) * 2;
+                    C.insert(uo, vo) = Cl[u][6];
+                    C.insert(uo, vo + 1) = Cl[u][7];
+                }
+            }
+        }
+    }
+    C *= 1.0 * lambdaLine / totL;
+    C.makeCompressed();
+}
+
+void Energy::init() {
+    totL = 0;
     Line(img, ver, lines, F);
+    // asin(e(1, 0)) 为角度
+    vector<vector<vector<int>>> bin(ver.size(), vector<vector<int>>(ver[0].size(), vector<int>()));
+    for (int i = 0, cnt = 0; i < ver.size(); i++) {
+        for (int j = 0; j < ver[i].size(); j++, cnt++) {
+            for (int k = 0; k < lines[i][j].size(); k++) {
+                totL++;
+                double angle = asin(l.second.y - l.first.y);
+                bin[i][j].push_back(floor(angle / alpha));
+                numInBin[bin[i][j][k]]++;
+            }
+        }
+    }
+    getV();
+    getA();
+    getB();
+    getC();
+}
+
+void Energy::getTheta(vector<vector<vector<lin>>> &lines, vector<vector<vector<MatrixXd>>> &F) {
+    for (int i = 0, cnt = 0; i < ver.size(); i++) {
+        for (int j = 0; j < ver[i].size(); j++, cnt++) {
+            V(cnt, 0)
+            MatrixXd Vq(8, 1);
+            Vq <<
+                V((cnt - ver[i].size() - 1) * 2, 0), V((cnt - ver[i].size() - 1) * 2 + 1, 0),
+                V((cnt - ver[i].size()) * 2, 0), V((cnt - ver[i].size()) * 2 + 1, 0),
+                V((cnt - 1) * 2, 0), V((cnt - 1) * 2 + 1, 0),
+                V(cnt * 2, 0), V(cnt * 2 + 1, 0);
+            for (int k = 0; k < lines[i][j].size(); k++) {
+                lin &l = lines[i][j][k];
+                MatrixXd nl = F[i][j][k] * Vq;
+                double angle = asin(l.second.y - l.first.y);
+                int bin = floor(angle / alpha);
+                double nangle = asin(nl(1, 0));
+                theta[i] += (nangle - angle) / numInBin[bin];
+            }
+        }
+    }
 }
 
 // double Energy::shapeTerm() {
