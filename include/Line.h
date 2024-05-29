@@ -30,6 +30,7 @@ public:
     bool onSegment(Point2d A, Point2d B, Point2d C);
     bool doIntersect(lin l1, lin l2);
     Point2d getIntersection(lin l1, lin l2);
+    void checkLines(vector<vector<vector<lin>>> &lines);
 };
 
 Line::Line(Mat &img, vecvecP &ver, vector<vector<vector<lin>>> &lines):
@@ -59,26 +60,32 @@ img(img), ver(ver) {
     for (int i = 0; i < cntLines; i++) {
         line(lineImg, Point(lsdLines[i * 7], lsdLines[i * 7 + 1]), Point(lsdLines[i * 7 + 2], lsdLines[i * 7 + 3]), Scalar(0, 0, 255), 1);
     }
-    imshow("lines", lineImg);
+    imshow("lines after LSD", lineImg);
     waitKey(0);
 
-    lines.resize(ver.size() - 1, vector<vector<lin>>(ver[0].size() - 1, vector<lin>()));
+    lines.resize(ver.size(), vector<vector<lin>>(ver[0].size(), vector<lin>()));
+
+    const int eps = 1e-6;
     for (int i = 1; i < ver.size(); i++) {
+        // cout << i << '\n';
+        vector<Point2f> contour;
+        Point2d tl, tr, br, bl, s, t;
         for (int j = 1; j < ver[i].size(); j++) {
-            vector<Point2f> contour;
-            Point2d tl = ver[i - 1][j - 1];
-            Point2d tr = ver[i - 1][j];
-            Point2d br = ver[i][j];
-            Point2d bl = ver[i][j - 1];
+            // cout << '\t' << j << '\n';
+            tl = ver[i - 1][j - 1];
+            tr = ver[i - 1][j];
+            br = ver[i][j];
+            bl = ver[i][j - 1];
+            contour.clear();
             contour.push_back(tl);
             contour.push_back(tr);
             contour.push_back(br);
             contour.push_back(bl);
 
-            const int eps = 1e-6;
+            // cout << "\t\t" << j << '\n';
             for (int k = 0; k < cntLines; k++) {
-                Point2d s = Point2d(lsdLines[k * 7], lsdLines[k * 7 + 1]);
-                Point2d t = Point2d(lsdLines[k * 7 + 2], lsdLines[k * 7 + 3]);
+                s = Point2d(lsdLines[k * 7], lsdLines[k * 7 + 1]);
+                t = Point2d(lsdLines[k * 7 + 2], lsdLines[k * 7 + 3]);
                 double flag1 = pointPolygonTest(contour, s, 0);
                 double flag2 = pointPolygonTest(contour, t, 0);
                 // 都在内部
@@ -130,6 +137,10 @@ img(img), ver(ver) {
             }
         }
     }
+
+    checkLines(lines);
+    delete[] lsdImg;
+    delete[] lsdLines;
 }
 
 // AB times AC
@@ -172,4 +183,19 @@ Point2d Line::getIntersection(lin l1, lin l2) {
     intersection.x = (b2 * c1 - b1 * c2) / determinant;
     intersection.y = (a1 * c2 - a2 * c1) / determinant;
     return intersection;
+}
+
+void Line::checkLines(vector<vector<vector<lin>>> &lines) {
+    Mat lineImg;
+    img.copyTo(lineImg);
+    for (int i = 0; i < lines.size(); i++) {
+        for (int j = 0; j < lines[i].size(); j++) {
+            Scalar randColor = Scalar(rand() % 256, rand() % 256, rand() % 256);
+            for (int k = 0; k < lines[i][j].size(); k++) {
+                line(lineImg, Point(lines[i][j][k].first + Point2d(0.5, 0.5)), Point(lines[i][j][k].second + Point2d(0.5, 0.5)), randColor, 1);
+            }
+        }
+    }
+    imshow("lines after process", lineImg);
+    waitKey(0);
 }

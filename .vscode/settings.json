@@ -13,6 +13,7 @@
         "unordered_map": "cpp",
         "vector": "cpp",
         "iosfwd": "cpp",
-        "lsd.h": "c"
+        "lsd.h": "c",
+        "new": "cpp"
     }
 }
