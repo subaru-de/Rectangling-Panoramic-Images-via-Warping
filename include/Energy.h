@@ -24,8 +24,8 @@ private:
     const double lambdaLine = 100.0;
     const double lambdaBound = 1e8;
     
-    const int cntBin = 50;
-    const double alpha = acos(-1) / cntBin;
+    static const int cntBin = 50;
+    static constexpr double alpha = acos(-1) / cntBin;
     Mat &img;
     vecvecP &ver, &nver;
     const int MAXNq, MAXV, MAXB;
@@ -44,7 +44,7 @@ public:
     void getA();
     void getB();
     void getC();
-    void getTheta(vector<vector<vector<lin>>> &lines, vector<vector<vector<MatrixXd>>> &F);
+    void getTheta();
     double getEnergy();
     void optimize();
     void convertV();
@@ -62,7 +62,9 @@ MAXV(ver.size() * ver[0].size() * 2), MAXB((ver.size() + ver[0].size()) * 2),
 img(img), ver(ver), nver(nver),
 A(MAXNq, MAXV), B(MAXB, MAXV), C(0, MAXV),
 V(MAXV, 1), Y(0, 1) {
+    // cout << "quq\n";
     init();
+    // cout << "qnq\n";
     optimize();
     cout << getEnergy() << '\n';
 }
@@ -80,17 +82,21 @@ double Energy::getEnergy() {
 
 void Energy::optimize() {
     SparseMatrix<double> AA = A.transpose() * A;
-    SparseMatrix<double> CC = C.transpose() * C;
     // SparseMatrix<double> AA = A;
-    // std::ofstream outfile;
 
     for (int iter = 0; iter < 10; iter++) {
+        // cout << iter << '\n';
         getC();
+        // cout << "quq\n";
+        SparseMatrix<double> CC = C.transpose() * C;
+        // cout << "qnq\n";
         cout << "Energy before iteration #" << iter << ": "<< getEnergy() << '\n';
         SparseMatrix<double> L(AA.rows() + CC.rows() + B.rows(), AA.cols());
-        MatrixXd YY(Y.rows() + AA.rows() + CC.rows(), 1);
-        YY << MatrixXd::Zero(AA.rows() + CC.rows(), 1), Y;
-        Y = YY;
+        if (Y.rows() < L.rows()) {
+            MatrixXd YY(Y.rows() + AA.rows() + CC.rows(), 1);
+            YY << MatrixXd::Zero(AA.rows() + CC.rows(), 1), Y;
+            Y = YY;
+        }
 
         // 竖直方向上 concat 矩阵 AA CC B
         for (int k = 0; k < AA.outerSize(); k++) {
@@ -109,15 +115,16 @@ void Energy::optimize() {
             }
         }
         L.makeCompressed();
-        // cout << L.rows() << ' ' << L.cols() << " ---------------\n";
-        // outfile.open("/home/nxte/codes/Rectangling-Panoramic-Images-via-Warping/include/matrix_output.txt");
-        // if (outfile.is_open()) {
-        //     outfile << L << '\n';
-        //     outfile.close();
-        //     std::cout << "矩阵已成功写入文件 matrix_output.txt" << std::endl;
-        // } else {
-        //     std::cerr << "无法打开文件" << std::endl;
-        // }
+        cout << L.rows() << ' ' << L.cols() << " ---------------\n";
+        std::ofstream outfile;
+        outfile.open("/home/nxte/codes/Rectangling-Panoramic-Images-via-Warping/include/matrix_output.txt");
+        if (outfile.is_open()) {
+            outfile << L << '\n';
+            outfile.close();
+            std::cout << "矩阵已成功写入文件 matrix_output.txt" << std::endl;
+        } else {
+            std::cerr << "无法打开文件" << std::endl;
+        }
 
         // L * V = Y
         SparseQR<SparseMatrix<double>, COLAMDOrdering<int>> solver;
@@ -246,38 +253,50 @@ void Energy::getC() {
     for (int i = 0; i < cntBin; i++) {
         theta[i] = 0;
     }
-    getTheta(lines, F);
+    getTheta();
     C.resize(totL * 2, MAXV);
     for (int i = 0, cnt = 0, Nl = 0; i < ver.size(); i++) {
         for (int j = 0; j < ver[i].size(); j++, cnt++) {
             for (int k = 0; k < lines[i][j].size(); k++, Nl++) {
+                // cout << k << "quq\n";
                 lin &l = lines[i][j][k];
+                Point2d vecl = (l.second - l.first) / dis(l.first, l.second);
                 MatrixXd R(2, 2), e(2, 1);
+                // cout << k << "qoq\n";
+                
                 int &m = bin[i][j][k];
+                assert(m < cntBin);
                 R << cos(theta[m]), -sin(theta[m]), sin(theta[m]), cos(theta[m]);
-                e << l.second.x - l.first.x, l.second.y - l.first.y;
+                // cout << m << ' ' << theta[m] << '\n';
+                assert(!isnan(R(0, 0)) && !isnan(R(0, 1)) && !isnan(R(1, 0)) && !isnan(R(0, 1)));
+                // cout << "R: \n" << R << '\n';
+                e << vecl.x, vecl.y;
+                // cout << "e: \n" << e << '\n';
                 MatrixXd Cl = R * e * (e.transpose() * e).inverse() * e.transpose() * R.transpose() - MatrixXd::Identity(2, 2);
                 // Ce = CF * Vq, C is Cl above
                 // Cl(2, 8)
+                // cout << "qwqCl: \n" << Cl << '\n';
                 Cl = Cl * F[i][j][k];
+                // cout << "Cl: \n" << Cl << '\n';
                 for (int u = 0, uo, vo; u < 2; u++) {
                     uo = Nl * 2 + u;
                     vo = ((i - 1) * ver[i].size() + j - 1) * 2;
-                    C.insert(uo, vo) = Cl[u][0];
-                    C.insert(uo, vo + 1) = Cl[u][1];
+                    C.insert(uo, vo) = Cl(u, 0);
+                    C.insert(uo, vo + 1) = Cl(u, 1);
                     
                     vo = ((i - 1) * ver[i].size() + j) * 2;
-                    C.insert(uo, vo) = Cl[u][2];
-                    C.insert(uo, vo + 1) = Cl[u][3];
+                    C.insert(uo, vo) = Cl(u, 2);
+                    C.insert(uo, vo + 1) = Cl(u, 3);
 
                     vo = (i * ver[i].size() + j - 1) * 2;
-                    C.insert(uo, vo) = Cl[u][4];
-                    C.insert(uo, vo + 1) = Cl[u][5];
+                    C.insert(uo, vo) = Cl(u, 4);
+                    C.insert(uo, vo + 1) = Cl(u, 5);
 
                     vo = (i * ver[i].size() + j) * 2;
-                    C.insert(uo, vo) = Cl[u][6];
-                    C.insert(uo, vo + 1) = Cl[u][7];
+                    C.insert(uo, vo) = Cl(u, 6);
+                    C.insert(uo, vo + 1) = Cl(u, 7);
                 }
+                // cout << k << "qnq\n";
             }
         }
     }
@@ -288,27 +307,45 @@ void Energy::getC() {
 void Energy::init() {
     totL = 0;
     Line(img, ver, lines, F);
-    // asin(e(1, 0)) 为角度
-    vector<vector<vector<int>>> bin(ver.size(), vector<vector<int>>(ver[0].size(), vector<int>()));
+    // acos(e(0, 0)) 为角度
+    bin.resize(ver.size(), vector<vector<int>>(ver[0].size(), vector<int>(0)));
     for (int i = 0, cnt = 0; i < ver.size(); i++) {
+        // cout << i << '\n';
         for (int j = 0; j < ver[i].size(); j++, cnt++) {
+            // cout << '\t' << j << '\n';
             for (int k = 0; k < lines[i][j].size(); k++) {
+                // cout << "\t\t" << k << '\n';
                 totL++;
-                double angle = asin(l.second.y - l.first.y);
+                lin &l = lines[i][j][k];
+                Point2d vecl = (l.second - l.first) / dis(l.first, l.second);
+                assert(vecl.y >= -1 && vecl.y <= 1);
+                double angle = acos(vecl.x);
                 bin[i][j].push_back(floor(angle / alpha));
+                assert(!isnan(bin[i][j][k]) && !isinf(bin[i][j][k]));
+                assert(bin[i][j][k] >= 0 && bin[i][j][k] < cntBin);
                 numInBin[bin[i][j][k]]++;
             }
         }
     }
+    // cout << "bin:\n";
+    // for (int i = 0; i < bin.size(); i++) {
+    //     cout << i << '\n';
+    //     for (int j = 0; j < bin[i].size(); j++) {
+    //         cout << "\t" << j << '\n';
+    //         for (int k = 0; k < bin[i][j].size(); k++) {
+    //             cout << bin[i][j][k] << ' ';
+    //         } cout << '\n';
+    //     } cout << '\n';
+    // } cout << '\n';
     getV();
     getA();
     getB();
 }
 
-void Energy::getTheta(vector<vector<vector<lin>>> &lines, vector<vector<vector<MatrixXd>>> &F) {
+void Energy::getTheta() {
     for (int i = 0, cnt = 0; i < ver.size(); i++) {
         for (int j = 0; j < ver[i].size(); j++, cnt++) {
-            V(cnt, 0)
+            if (!i || !j) continue;
             MatrixXd Vq(8, 1);
             Vq <<
                 V((cnt - ver[i].size() - 1) * 2, 0), V((cnt - ver[i].size() - 1) * 2 + 1, 0),
@@ -317,11 +354,27 @@ void Energy::getTheta(vector<vector<vector<lin>>> &lines, vector<vector<vector<M
                 V(cnt * 2, 0), V(cnt * 2 + 1, 0);
             for (int k = 0; k < lines[i][j].size(); k++) {
                 lin &l = lines[i][j][k];
+                Point2d vecl = (l.second - l.first) / dis(l.first, l.second);
+                // cout << k << '\n';
                 MatrixXd nl = F[i][j][k] * Vq;
-                double angle = asin(l.second.y - l.first.y);
+                nl /= sqrt(nl(0, 0) * nl(0, 0) + nl(1, 0) * nl(1, 0));
+                for (int ii = 0; ii < F[i][j][k].rows(); ii++) {
+                    for (int jj = 0; jj < F[i][j][k].cols(); jj++) {
+                        assert(!isnan(F[i][j][k](ii, jj)));
+                    }
+                }
+                // cout << k << '\n';
+                double angle = acos(vecl.x);
                 int bin = floor(angle / alpha);
-                double nangle = asin(nl(1, 0));
-                theta[i] += (nangle - angle) / numInBin[bin];
+                // cout << "nl:\n" << nl << '\n';
+                assert(!isnan(nl(0, 0)) && !isnan(nl(1, 0)));
+                cout << nl(0, 0) << ' ' << nl(1, 0) << '\n';
+                assert(nl(0, 0) >= 0 && nl(0, 0) <= 1 && nl(1, 0) >= 0 && nl(1, 0) <= 1);
+                // cout << nl(0, 0) << '\n';
+                double nangle = acos(nl(0, 0));
+                // cout << angle << ' ' << nangle << '\n';
+                assert(!isnan(angle) && !isnan(nangle));
+                if (numInBin[bin]) theta[i] += (nangle - angle) / numInBin[bin];
             }
         }
     }

@@ -20,6 +20,11 @@ using namespace Eigen;
 typedef pair<Point2d, Point2d> lin;
 typedef vector<vector<Point>> vecvecP;
 
+double dis(Point2d A, Point2d B) {
+    Point2d de = B - A;
+    return sqrt(de.x * de.x + de.y * de.y);
+}
+
 class Line {
 private:
     Mat &img;
@@ -92,17 +97,18 @@ img(img), ver(ver) {
                 double flag2 = pointPolygonTest(contour, t, 1);
                 // 都在内部
                 if (flag1 >= eps && flag2 >= eps) {
-                    lines[i][j].push_back(lin(s, t));
-                    MatrixXd M;
-                    getF(M, contour, lines[i][j].back());
-                    F[i][j].push_back(M);
+                    if (dis(s, t) > eps) {
+                        lines[i][j].push_back(lin(s, t));
+                        MatrixXd M;
+                        getF(M, contour, lines[i][j].back());
+                        F[i][j].push_back(M);
+                    }
                 }
                 else if (flag1 >= eps || flag2 >= eps) {
-                    Point2d ins, de;
+                    Point2d ins;
                     if (doIntersect(lin(tl, tr), lin(s, t))) {
                         ins = getIntersection(lin(tl, tr), lin(s, t));
-                        de = (flag1 >= eps ? s : t) - ins;
-                        if (abs(de.x) > eps && abs(de.y) > eps) {
+                        if (dis(flag1 >= eps ? s : t, ins) > eps) {
                             lines[i][j].push_back(lin(flag1 >= eps ? s : t, ins));
                             MatrixXd M;
                             getF(M, contour, lines[i][j].back());
@@ -111,8 +117,7 @@ img(img), ver(ver) {
                     }
                     else if (doIntersect(lin(tr, br), lin(s, t))) {
                         ins = getIntersection(lin(tr, br), lin(s, t));
-                        de = (flag1 >= eps ? s : t) - ins;
-                        if (abs(de.x) > eps && abs(de.y) > eps) {
+                        if (dis(flag1 >= eps ? s : t, ins) > eps) {
                             lines[i][j].push_back(lin(flag1 >= eps ? s : t, ins));
                             MatrixXd M;
                             getF(M, contour, lines[i][j].back());
@@ -121,8 +126,7 @@ img(img), ver(ver) {
                     }
                     else if (doIntersect(lin(bl, br), lin(s, t))) {
                         ins = getIntersection(lin(bl, br), lin(s, t));
-                        de = (flag1 >= eps ? s : t) - ins;
-                        if (abs(de.x) > eps && abs(de.y) > eps) {
+                        if (dis(flag1 >= eps ? s : t, ins) > eps) {
                             lines[i][j].push_back(lin(flag1 >= eps ? s : t, ins));
                             MatrixXd M;
                             getF(M, contour, lines[i][j].back());
@@ -131,8 +135,7 @@ img(img), ver(ver) {
                     }
                     else if (doIntersect(lin(tl, bl), lin(s, t))) {
                         ins = getIntersection(lin(tl, bl), lin(s, t));
-                        de = (flag1 >= eps ? s : t) - ins;
-                        if (abs(de.x) > eps && abs(de.y) > eps) {
+                        if (dis(flag1 >= eps ? s : t, ins) > eps) {
                             lines[i][j].push_back(lin(flag1 >= eps ? s : t, ins));
                             MatrixXd M;
                             getF(M, contour, lines[i][j].back());
@@ -160,11 +163,12 @@ img(img), ver(ver) {
                         (ins1.x == -1 ? ins1 : ins2) = getIntersection(lin(tl, bl), lin(s, t));
                     }
                     if (ins1.x != -1 && ins2.x != -1) {
-                        de = ins1 - ins2;
-                        if (abs(de.x) > eps && abs(de.y) > eps) lines[i][j].push_back(lin(ins1, ins2));
-                        MatrixXd M;
-                        getF(M, contour, lines[i][j].back());
-                        F[i][j].push_back(M);
+                        if (dis(ins1, ins2) > eps) {
+                            lines[i][j].push_back(lin(ins1, ins2));
+                            MatrixXd M;
+                            getF(M, contour, lines[i][j].back());
+                            F[i][j].push_back(M);
+                        }
                         // if (pointPolygonTest(contour, ins1, 1) < -eps || pointPolygonTest(contour, ins2, 0) < -eps) {
                         //     cout
                         //     << "line:\n"
@@ -253,9 +257,9 @@ void Line::getF(MatrixXd &F, vector<Point2f> &contour, lin l) {
     double u[2], v[2];
     for (int i = 0; i < 2; i++) {
         Point2d p0 = contour[1] - contour[0];
-        Point2d p1 = contour[2] - contour[0];
-        Point2d p2 = contour[0] - contour[1] + contour[3] - contour[2];
-        Point2d p3 = l.first - Point2d(contour[0]);
+        Point2d p1 = contour[3] - contour[0];
+        Point2d p2 = contour[0] - contour[1] + contour[2] - contour[3];
+        Point2d p3 = (i ? l.second : l.first) - Point2d(contour[0]);
         double A = p2.x * p1.y - p2.y * p1.x;
         double B = p0.x * p1.y - p0.y * p1.x + p3.x * p2.y - p3.y * p2.x;
         double C = p3.x * p0.y - p3.y * p0.x;
@@ -274,16 +278,25 @@ void Line::getF(MatrixXd &F, vector<Point2f> &contour, lin l) {
         }
         u[i] = (p3.x - p1.x * v[i]) / (p0.x + p2.x * v[i]);
     }
+    // for (auto it : contour) {
+    //     cout << it << ' ';
+    // } cout << '\n';
+    // cout << l.first << ' ' << l.second << '\n';
+    assert(!isnan(u[0]));
+    assert(!isnan(v[0]));
+    assert(!isnan(u[1]));
+    assert(!isnan(v[1]));
     F.resize(4, 8);
     F <<
         (1 - u[0]) * (1 - v[0]), 0, u[0] * (1 - v[0]), 0, v[0] * (1 - u[0]), 0, u[0] * v[0], 0,
         0, (1 - u[0]) * (1 - v[0]), 0, u[0] * (1 - v[0]), 0, v[0] * (1 - u[0]), 0, u[0] * v[0],
         (1 - u[1]) * (1 - v[1]), 0, u[1] * (1 - v[1]), 0, v[1] * (1 - u[1]), 0, u[1] * v[1], 0,
         0, (1 - u[1]) * (1 - v[1]), 0, u[1] * (1 - v[1]), 0, v[1] * (1 - u[1]), 0, u[1] * v[1];
+    // cout << F << '\n';
+    // waitKey(0);
     MatrixXd minus(2, 4);
     minus << -1, 0, 1, 0, 0, -1, 0, 1;
-    double dis = sqrt((l.first.x - l.second.x) * (l.first.x - l.second.x) + (l.first.y - l.second.y) * (l.first.y - l.second.y));
-    minus /= dis;
+    minus /= dis(l.first, l.second);
     F = minus * F;
     return;
 }
