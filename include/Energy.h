@@ -92,55 +92,56 @@ void Energy::optimize() {
         SparseMatrix<double> CC = C.transpose() * C;
         // SparseMatrix<double> CC = C;
         // cout << "qnq\n";
-        SparseMatrix<double> LL(AA.rows() + CC.rows() + B.rows(), AA.cols());
 
-        // 竖直方向上 concat 矩阵 AA CC B
-        int pre = -1, cnt = 0;
-        for (int k = 0; k < AA.outerSize(); k++) {
-            for (SparseMatrix<double>::InnerIterator it(AA, k); it; ++it) {
+        SparseMatrix<double> L(A.rows() + C.rows() + B.rows(), A.cols());
+        // 竖直方向上 concat 矩阵 A C B
+        for (int k = 0; k < A.outerSize(); k++) {
+            for (SparseMatrix<double>::InnerIterator it(A, k); it; ++it) {
+                if (it.value() == 0) continue;
                 L.insert(it.row(), it.col()) = it.value();
-                if (it.value() && it.row() != pre) {
-                    pre = it.row();
-                    cnt++;
-                }
             }
         }
-        for (int k = 0; k < CC.outerSize(); k++) {
-            for (SparseMatrix<double>::InnerIterator it(CC, k); it; ++it) {
-                L.insert(it.row() + AA.rows(), it.col()) = it.value();
+        for (int k = 0; k < C.outerSize(); k++) {
+            for (SparseMatrix<double>::InnerIterator it(C, k); it; ++it) {
+                if (it.value() == 0) continue;
+                L.insert(it.row() + A.rows(), it.col()) = it.value();
             }
         }
         for (int k = 0; k < B.outerSize(); k++) {
             for (SparseMatrix<double>::InnerIterator it(B, k); it; ++it) {
-                L.insert(it.row() + AA.rows() + CC.rows(), it.col()) = it.value();
+                if (it.value() == 0) continue;
+                L.insert(it.row() + A.rows() + C.rows(), it.col()) = it.value();
             }
         }
         L.makeCompressed();
-        SparseMatrix<double> L(cnt + 1, AA.cols());
-        if (Y.rows() < L.rows()) {
-            MatrixXd YY(Y.rows() + AA.rows() + CC.rows(), 1);
-            YY << MatrixXd::Zero(AA.rows() + CC.rows(), 1), Y;
-            Y = YY;
-        }
-        cout << L.rows() << ' ' << L.cols() << " ---------------\n";
+        // SparseMatrix<double> LL(AA.rows() + B.rows(), AA.cols());
+        // for (int k = 0; k < L.outerSize(); k++) {
+        //     for (SparseMatrix<double>::InnerIterator it(L, k); it; ++it) {
+        //         LL.insert(it.row(), it.col()) = it.value();
+        //     }
+        // }
+
+        MatrixXd YY(A.rows() + C.rows() + B.rows(), 1);
+        YY << MatrixXd::Zero(A.rows() + C.rows(), 1), Y;
+
         std::ofstream outfile;
         outfile.open("/home/nxte/codes/Rectangling-Panoramic-Images-via-Warping/include/matrix_output.txt");
         if (outfile.is_open()) {
-            outfile << C << "\n\n\n" << CC;
+            outfile << L << "\n\n\n";
             outfile.close();
             std::cout << "矩阵已成功写入文件 matrix_output.txt" << std::endl;
         } else {
             std::cerr << "无法打开文件" << std::endl;
         }
 
-        // L * V = Y
+        // L * V = YY
         SparseQR<SparseMatrix<double>, COLAMDOrdering<int>> solver;
         solver.compute(L);
         if (solver.info() != Success) {
             std::cerr << "Decomposition failed!" << std::endl;
             return;
         }
-        V = solver.solve(Y);
+        V = solver.solve(YY);
         if (solver.info() != Success) {
             std::cerr << "Solving failed!" << std::endl;
             return;
