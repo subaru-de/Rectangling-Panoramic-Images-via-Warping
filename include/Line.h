@@ -29,6 +29,7 @@ class Line {
 private:
     Mat &img;
     vecvecP &ver;
+    const double eps = 1e-3;
 public:
     Line(Mat &img, vecvecP &ver, vector<vector<vector<lin>>> &lines, vector<vector<vector<MatrixXd>>> &F);
     double cross(Point2d A, Point2d B, Point2d C);
@@ -37,6 +38,7 @@ public:
     Point2d getIntersection(lin l1, lin l2);
     void checkLines(vector<vector<vector<lin>>> &lines);
     void getF(MatrixXd &F, vector<Point2f> &contour, lin l);
+    void processSeg(Point2d &s, Point2d &t);
 };
 
 Line::Line(Mat &img, vecvecP &ver, vector<vector<vector<lin>>> &lines, vector<vector<vector<MatrixXd>>> &F):
@@ -72,7 +74,7 @@ img(img), ver(ver) {
     lines.resize(ver.size(), vector<vector<lin>>(ver[0].size(), vector<lin>()));
     F.resize(ver.size(), vector<vector<MatrixXd>>(ver[0].size(), vector<MatrixXd>()));
 
-    const double eps = 1e-3;
+    // const double eps = 1e-3;
     for (int i = 1; i < ver.size(); i++) {
         // cout << i << '\n';
         vector<Point2f> contour;
@@ -97,6 +99,7 @@ img(img), ver(ver) {
                 double flag2 = pointPolygonTest(contour, t, 1);
                 // 都在内部
                 if (flag1 >= eps && flag2 >= eps) {
+                    processSeg(s, t);
                     if (dis(s, t) > eps) {
                         lines[i][j].push_back(lin(s, t));
                         MatrixXd M;
@@ -108,8 +111,9 @@ img(img), ver(ver) {
                     Point2d ins;
                     if (doIntersect(lin(tl, tr), lin(s, t))) {
                         ins = getIntersection(lin(tl, tr), lin(s, t));
-                        if (dis(flag1 >= eps ? s : t, ins) > eps) {
-                            lines[i][j].push_back(lin(flag1 >= eps ? s : t, ins));
+                        processSeg((flag1 >= eps ? s : t), ins);
+                        if (dis((flag1 >= eps ? s : t), ins) > eps) {
+                            lines[i][j].push_back(lin((flag1 >= eps ? s : t), ins));
                             MatrixXd M;
                             getF(M, contour, lines[i][j].back());
                             F[i][j].push_back(M);
@@ -117,7 +121,8 @@ img(img), ver(ver) {
                     }
                     else if (doIntersect(lin(tr, br), lin(s, t))) {
                         ins = getIntersection(lin(tr, br), lin(s, t));
-                        if (dis(flag1 >= eps ? s : t, ins) > eps) {
+                        processSeg((flag1 >= eps ? s : t), ins);
+                        if (dis((flag1 >= eps ? s : t), ins) > eps) {
                             lines[i][j].push_back(lin(flag1 >= eps ? s : t, ins));
                             MatrixXd M;
                             getF(M, contour, lines[i][j].back());
@@ -126,7 +131,8 @@ img(img), ver(ver) {
                     }
                     else if (doIntersect(lin(bl, br), lin(s, t))) {
                         ins = getIntersection(lin(bl, br), lin(s, t));
-                        if (dis(flag1 >= eps ? s : t, ins) > eps) {
+                        processSeg((flag1 >= eps ? s : t), ins);
+                        if (dis((flag1 >= eps ? s : t), ins) > eps) {
                             lines[i][j].push_back(lin(flag1 >= eps ? s : t, ins));
                             MatrixXd M;
                             getF(M, contour, lines[i][j].back());
@@ -135,7 +141,8 @@ img(img), ver(ver) {
                     }
                     else if (doIntersect(lin(tl, bl), lin(s, t))) {
                         ins = getIntersection(lin(tl, bl), lin(s, t));
-                        if (dis(flag1 >= eps ? s : t, ins) > eps) {
+                        processSeg((flag1 >= eps ? s : t), ins);
+                        if (dis((flag1 >= eps ? s : t), ins) > eps) {
                             lines[i][j].push_back(lin(flag1 >= eps ? s : t, ins));
                             MatrixXd M;
                             getF(M, contour, lines[i][j].back());
@@ -163,6 +170,7 @@ img(img), ver(ver) {
                         (ins1.x == -1 ? ins1 : ins2) = getIntersection(lin(tl, bl), lin(s, t));
                     }
                     if (ins1.x != -1 && ins2.x != -1) {
+                        processSeg(ins1, ins2);
                         if (dis(ins1, ins2) > eps) {
                             lines[i][j].push_back(lin(ins1, ins2));
                             MatrixXd M;
@@ -263,17 +271,17 @@ void Line::getF(MatrixXd &F, vector<Point2f> &contour, lin l) {
         double A = p2.x * p1.y - p2.y * p1.x;
         double B = p0.x * p1.y - p0.y * p1.x + p3.x * p2.y - p3.y * p2.x;
         double C = p3.x * p0.y - p3.y * p0.x;
-        if (A == 0) {
+        if (A < 1e-3) {
             v[i] = -C / B;
         }
         else {
             double delta = sqrt(B * B - 4 * A * C);
-            double tmp = -B - delta / A / 2;
-            if (tmp >= 0 && tmp <= 1) {
+            double tmp = (-B - delta) / A / 2;
+            if (tmp >= -1e-6 && tmp <= 1 + 1e-6) {
                 v[i] = tmp;
             }
             else {
-                v[i] = -B + delta / A / 2;
+                v[i] = (-B + delta) / A / 2;
             }
         }
         u[i] = (p3.x - p1.x * v[i]) / (p0.x + p2.x * v[i]);
@@ -282,10 +290,12 @@ void Line::getF(MatrixXd &F, vector<Point2f> &contour, lin l) {
     //     cout << it << ' ';
     // } cout << '\n';
     // cout << l.first << ' ' << l.second << '\n';
-    assert(!isnan(u[0]));
-    assert(!isnan(v[0]));
-    assert(!isnan(u[1]));
-    assert(!isnan(v[1]));
+    // cout << u[0] << ' ' << u[1] << ' ' << v[0] << ' ' << v[1] << '\n';
+    // for (auto it : contour) cout << it << ' '; cout << l.first << ' ' << l.second << '\n';
+    assert(!isnan(u[0]) && u[0] >= -1e-3 && u[0] <= 1 + 1e-3);
+    assert(!isnan(v[0]) && v[0] >= -1e-3 && v[0] <= 1 + 1e-3);
+    assert(!isnan(u[1]) && u[1] >= -1e-3 && u[1] <= 1 + 1e-3);
+    assert(!isnan(v[1]) && v[1] >= -1e-3 && v[1] <= 1 + 1e-3);
     F.resize(4, 8);
     F <<
         (1 - u[0]) * (1 - v[0]), 0, u[0] * (1 - v[0]), 0, v[0] * (1 - u[0]), 0, u[0] * v[0], 0,
@@ -299,4 +309,23 @@ void Line::getF(MatrixXd &F, vector<Point2f> &contour, lin l) {
     minus /= dis(l.first, l.second);
     F = minus * F;
     return;
+}
+
+void Line::processSeg(Point2d &s, Point2d &t) {
+    if (s.x > t.x) {
+        s.x -= 0.1 * (s.x - t.x);
+        t.x += 0.1 * (s.x - t.x);
+    }
+    else {
+        s.x += 0.1 * (t.x - s.x);
+        t.x -= 0.1 * (t.x - s.x);
+    }
+    if (s.y > t.y) {
+        s.y -= 0.1 * (s.y - t.y);
+        t.y += 0.1 * (s.y - t.y);
+    }
+    else {
+        s.y += 0.1 * (t.y - s.y);
+        t.y -= 0.1 * (t.y - s.y);
+    }
 }

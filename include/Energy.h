@@ -22,7 +22,7 @@ using namespace Eigen;
 class Energy {
 private:
     const double lambdaLine = 100.0;
-    const double lambdaBound = 1e8;
+    const double lambdaBound = 1e6;
     
     static const int cntBin = 50;
     static constexpr double alpha = acos(-1) / cntBin;
@@ -85,23 +85,24 @@ void Energy::optimize() {
     // SparseMatrix<double> AA = A;
 
     double preEnergy = 1e18, E = 1e18;
-    for (int iter = 0; iter < 10; iter++) {
+    for (int iter = 0; iter < 1; iter++) {
         // cout << iter << '\n';
         getC();
         // cout << "quq\n";
         SparseMatrix<double> CC = C.transpose() * C;
+        // SparseMatrix<double> CC = C;
         // cout << "qnq\n";
-        SparseMatrix<double> L(AA.rows() + CC.rows() + B.rows(), AA.cols());
-        if (Y.rows() < L.rows()) {
-            MatrixXd YY(Y.rows() + AA.rows() + CC.rows(), 1);
-            YY << MatrixXd::Zero(AA.rows() + CC.rows(), 1), Y;
-            Y = YY;
-        }
+        SparseMatrix<double> LL(AA.rows() + CC.rows() + B.rows(), AA.cols());
 
         // 竖直方向上 concat 矩阵 AA CC B
+        int pre = -1, cnt = 0;
         for (int k = 0; k < AA.outerSize(); k++) {
             for (SparseMatrix<double>::InnerIterator it(AA, k); it; ++it) {
                 L.insert(it.row(), it.col()) = it.value();
+                if (it.value() && it.row() != pre) {
+                    pre = it.row();
+                    cnt++;
+                }
             }
         }
         for (int k = 0; k < CC.outerSize(); k++) {
@@ -115,11 +116,17 @@ void Energy::optimize() {
             }
         }
         L.makeCompressed();
+        SparseMatrix<double> L(cnt + 1, AA.cols());
+        if (Y.rows() < L.rows()) {
+            MatrixXd YY(Y.rows() + AA.rows() + CC.rows(), 1);
+            YY << MatrixXd::Zero(AA.rows() + CC.rows(), 1), Y;
+            Y = YY;
+        }
         cout << L.rows() << ' ' << L.cols() << " ---------------\n";
         std::ofstream outfile;
         outfile.open("/home/nxte/codes/Rectangling-Panoramic-Images-via-Warping/include/matrix_output.txt");
         if (outfile.is_open()) {
-            outfile << L << '\n';
+            outfile << C << "\n\n\n" << CC;
             outfile.close();
             std::cout << "矩阵已成功写入文件 matrix_output.txt" << std::endl;
         } else {
@@ -160,10 +167,10 @@ void Energy::convertV() {
         for (int j = 0; j < nver[i].size(); j++, cnt += 2) {
             nver[i][j].x = V(cnt, 0) + 0.5;
             nver[i][j].y = V(cnt + 1, 0) + 0.5;
-            // cout << nver[i][j] << ' '<< V(cnt, 0) << ' ' << V(cnt + 1, 0) << '\n';
-            // cout << nver[i][j] << ' ';
+            cout << i << ' ' << j << ' ' << nver[i][j] << '\n';
+            assert(nver[i][j].x >= 0 && nver[i][j].x < img.cols);
+            assert(nver[i][j].y >= 0 && nver[i][j].y < img.rows);
         }
-        // cout << '\n';
     }
 }
 
@@ -261,7 +268,8 @@ void Energy::getC() {
     }
     getTheta();
     C.resize(totL * 2, MAXV);
-    for (int i = 0, cnt = 0, Nl = 0; i < ver.size(); i++) {
+    int Nl = 0;
+    for (int i = 0, cnt = 0; i < ver.size(); i++) {
         for (int j = 0; j < ver[i].size(); j++, cnt++) {
             for (int k = 0; k < lines[i][j].size(); k++, Nl++) {
                 // cout << k << "quq\n";
@@ -284,6 +292,16 @@ void Energy::getC() {
                 // cout << "qwqCl: \n" << Cl << '\n';
                 Cl = Cl * F[i][j][k];
                 // cout << "Cl: \n" << Cl << '\n';
+                bool flag = 0;
+                for (int u = 0; u < 8; u++) {
+                    if (Cl(0, u)) flag = 1;
+                }
+                assert(flag == 1);
+                flag = 0;
+                for (int u = 0; u < 8; u++) {
+                    if (Cl(0, u)) flag = 1;
+                }
+                assert(flag == 1);
                 for (int u = 0, uo, vo; u < 2; u++) {
                     uo = Nl * 2 + u;
                     vo = ((i - 1) * ver[i].size() + j - 1) * 2;
@@ -306,6 +324,7 @@ void Energy::getC() {
             }
         }
     }
+    assert(Nl == totL);
     C *= 1.0 * lambdaLine / totL;
     C.makeCompressed();
 }
@@ -365,6 +384,12 @@ void Energy::getTheta() {
                 MatrixXd nl = F[i][j][k] * Vq;
                 double lennl = sqrt(nl(0, 0) * nl(0, 0) + nl(1, 0) * nl(1, 0));
                 if (lennl) nl /= lennl;
+                else {
+                    cout << F[i][j][k] << "\n\n";
+                    cout << Vq << "\n\n";
+                    cout << nl << '\n';
+                    assert(0);
+                }
                 for (int ii = 0; ii < F[i][j][k].rows(); ii++) {
                     for (int jj = 0; jj < F[i][j][k].cols(); jj++) {
                         assert(!isnan(F[i][j][k](ii, jj)));
