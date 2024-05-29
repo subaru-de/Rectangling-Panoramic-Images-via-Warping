@@ -84,13 +84,13 @@ void Energy::optimize() {
     SparseMatrix<double> AA = A.transpose() * A;
     // SparseMatrix<double> AA = A;
 
+    double preEnergy = 1e18, E = 1e18;
     for (int iter = 0; iter < 10; iter++) {
         // cout << iter << '\n';
         getC();
         // cout << "quq\n";
         SparseMatrix<double> CC = C.transpose() * C;
         // cout << "qnq\n";
-        cout << "Energy before iteration #" << iter << ": "<< getEnergy() << '\n';
         SparseMatrix<double> L(AA.rows() + CC.rows() + B.rows(), AA.cols());
         if (Y.rows() < L.rows()) {
             MatrixXd YY(Y.rows() + AA.rows() + CC.rows(), 1);
@@ -145,6 +145,12 @@ void Energy::optimize() {
         // double cond_number = diagR.array().abs().maxCoeff() / diagR.array().abs().minCoeff();
 
         // std::cout << "Estimated condition number: " << cond_number << std::endl;
+        
+        cout << "Energy after iteration #" << iter << ": "<< (E = getEnergy()) << '\t';
+        double incRate = (preEnergy - E) / preEnergy;
+        cout << "inc_rate: " << incRate << '\n';
+        if (incRate < 0.01) break;
+        preEnergy = E;
     }
     convertV();
 }
@@ -357,19 +363,25 @@ void Energy::getTheta() {
                 Point2d vecl = (l.second - l.first) / dis(l.first, l.second);
                 // cout << k << '\n';
                 MatrixXd nl = F[i][j][k] * Vq;
-                nl /= sqrt(nl(0, 0) * nl(0, 0) + nl(1, 0) * nl(1, 0));
+                double lennl = sqrt(nl(0, 0) * nl(0, 0) + nl(1, 0) * nl(1, 0));
+                if (lennl) nl /= lennl;
                 for (int ii = 0; ii < F[i][j][k].rows(); ii++) {
                     for (int jj = 0; jj < F[i][j][k].cols(); jj++) {
                         assert(!isnan(F[i][j][k](ii, jj)));
                     }
                 }
+                for (int ii = 0; ii < Vq.rows(); ii++) {
+                    for (int jj = 0; jj < Vq.cols(); jj++) {
+                        assert(!isnan(Vq(ii, jj)));
+                    }
+                }
+                
                 // cout << k << '\n';
                 double angle = acos(vecl.x);
                 int bin = floor(angle / alpha);
                 // cout << "nl:\n" << nl << '\n';
                 assert(!isnan(nl(0, 0)) && !isnan(nl(1, 0)));
-                cout << nl(0, 0) << ' ' << nl(1, 0) << '\n';
-                assert(nl(0, 0) >= 0 && nl(0, 0) <= 1 && nl(1, 0) >= 0 && nl(1, 0) <= 1);
+                assert(nl(0, 0) >= -1 && nl(0, 0) <= 1 && nl(1, 0) >= -1 && nl(1, 0) <= 1);
                 // cout << nl(0, 0) << '\n';
                 double nangle = acos(nl(0, 0));
                 // cout << angle << ' ' << nangle << '\n';
