@@ -25,15 +25,16 @@ private:
     Mat &img;
     vecvecP &ver;
 public:
-    Line(Mat &img, vecvecP &ver, vector<vector<vector<lin>>> &lines);
+    Line(Mat &img, vecvecP &ver, vector<vector<vector<lin>>> &lines, vector<vector<vector<MatrixXd>>> &F);
     double cross(Point2d A, Point2d B, Point2d C);
     bool onSegment(Point2d A, Point2d B, Point2d C);
     bool doIntersect(lin l1, lin l2);
     Point2d getIntersection(lin l1, lin l2);
     void checkLines(vector<vector<vector<lin>>> &lines);
+    void getF(MatrixXd &F, vector<Point2f> &contour, lin l);
 };
 
-Line::Line(Mat &img, vecvecP &ver, vector<vector<vector<lin>>> &lines):
+Line::Line(Mat &img, vecvecP &ver, vector<vector<vector<lin>>> &lines, vector<vector<vector<MatrixXd>>> &F):
 img(img), ver(ver) {
     Mat grayImg;
     cvtColor(img, grayImg, COLOR_BGR2GRAY);
@@ -64,8 +65,9 @@ img(img), ver(ver) {
     waitKey(0);
 
     lines.resize(ver.size(), vector<vector<lin>>(ver[0].size(), vector<lin>()));
+    F.resize(ver.size(), vector<vector<MatrixXd>>(ver[0].size(), vector<MatrixXd>()));
 
-    const int eps = 1e-6;
+    const double eps = 1e-3;
     for (int i = 1; i < ver.size(); i++) {
         // cout << i << '\n';
         vector<Point2f> contour;
@@ -86,34 +88,62 @@ img(img), ver(ver) {
             for (int k = 0; k < cntLines; k++) {
                 s = Point2d(lsdLines[k * 7], lsdLines[k * 7 + 1]);
                 t = Point2d(lsdLines[k * 7 + 2], lsdLines[k * 7 + 3]);
-                double flag1 = pointPolygonTest(contour, s, 0);
-                double flag2 = pointPolygonTest(contour, t, 0);
+                double flag1 = pointPolygonTest(contour, s, 1);
+                double flag2 = pointPolygonTest(contour, t, 1);
                 // 都在内部
-                if (flag1 >= 0 && flag2 >= 0) {
+                if (flag1 >= eps && flag2 >= eps) {
                     lines[i][j].push_back(lin(s, t));
+                    MatrixXd M;
+                    getF(M, contour, lines[i][j].back());
+                    F[i][j].push_back(M);
                 }
-                else if (flag1 >= 0 || flag2 >= 0) {
+                else if (flag1 >= eps || flag2 >= eps) {
                     Point2d ins, de;
                     if (doIntersect(lin(tl, tr), lin(s, t))) {
                         ins = getIntersection(lin(tl, tr), lin(s, t));
-                        de = (flag1 ? s : t) - ins;
-                        if (abs(de.x) > eps && abs(de.y) > eps) lines[i][j].push_back(lin(flag1 ? s : t, ins));
+                        de = (flag1 >= eps ? s : t) - ins;
+                        if (abs(de.x) > eps && abs(de.y) > eps) {
+                            lines[i][j].push_back(lin(flag1 >= eps ? s : t, ins));
+                            MatrixXd M;
+                            getF(M, contour, lines[i][j].back());
+                            F[i][j].push_back(M);
+                        }
                     }
                     else if (doIntersect(lin(tr, br), lin(s, t))) {
                         ins = getIntersection(lin(tr, br), lin(s, t));
-                        de = (flag1 ? s : t) - ins;
-                        if (abs(de.x) > eps && abs(de.y) > eps) lines[i][j].push_back(lin(flag1 ? s : t, ins));
+                        de = (flag1 >= eps ? s : t) - ins;
+                        if (abs(de.x) > eps && abs(de.y) > eps) {
+                            lines[i][j].push_back(lin(flag1 >= eps ? s : t, ins));
+                            MatrixXd M;
+                            getF(M, contour, lines[i][j].back());
+                            F[i][j].push_back(M);
+                        }
                     }
                     else if (doIntersect(lin(bl, br), lin(s, t))) {
                         ins = getIntersection(lin(bl, br), lin(s, t));
-                        de = (flag1 ? s : t) - ins;
-                        if (abs(de.x) > eps && abs(de.y) > eps) lines[i][j].push_back(lin(flag1 ? s : t, ins));
+                        de = (flag1 >= eps ? s : t) - ins;
+                        if (abs(de.x) > eps && abs(de.y) > eps) {
+                            lines[i][j].push_back(lin(flag1 >= eps ? s : t, ins));
+                            MatrixXd M;
+                            getF(M, contour, lines[i][j].back());
+                            F[i][j].push_back(M);
+                        }
                     }
                     else if (doIntersect(lin(tl, bl), lin(s, t))) {
                         ins = getIntersection(lin(tl, bl), lin(s, t));
-                        de = (flag1 ? s : t) - ins;
-                        if (abs(de.x) > eps && abs(de.y) > eps) lines[i][j].push_back(lin(flag1 ? s : t, ins));
+                        de = (flag1 >= eps ? s : t) - ins;
+                        if (abs(de.x) > eps && abs(de.y) > eps) {
+                            lines[i][j].push_back(lin(flag1 >= eps ? s : t, ins));
+                            MatrixXd M;
+                            getF(M, contour, lines[i][j].back());
+                            F[i][j].push_back(M);
+                        }
                     }
+                    // cout << pointPolygonTest(contour, flag1 >= eps ? s : t, 1) << ' ' << pointPolygonTest(contour, ins, 1) << '\n';
+                    // cout << "line:\n" << tl << ' ' << tr << '\n' << bl << ' ' << br << '\n' <<
+                    //     (flag1 >= eps ? s : t) << ' ' << ins << '\n';
+                    assert(pointPolygonTest(contour, flag1 >= eps ? s : t, 1) >= -eps);
+                    assert(pointPolygonTest(contour, ins, 1) >= -eps);
                 }
                 else {
                     Point2d ins1(-1, -1), ins2(-1, -1), de;
@@ -132,6 +162,19 @@ img(img), ver(ver) {
                     if (ins1.x != -1 && ins2.x != -1) {
                         de = ins1 - ins2;
                         if (abs(de.x) > eps && abs(de.y) > eps) lines[i][j].push_back(lin(ins1, ins2));
+                        MatrixXd M;
+                        getF(M, contour, lines[i][j].back());
+                        F[i][j].push_back(M);
+                        // if (pointPolygonTest(contour, ins1, 1) < -eps || pointPolygonTest(contour, ins2, 0) < -eps) {
+                        //     cout
+                        //     << "line:\n"
+                        //     << tl << ' ' << tr << '\n'
+                        //     << bl << ' ' << br << '\n'
+                        //     << ins1 << ' ' << ins2 << '\n'
+                        //     << pointPolygonTest(contour, ins1, 1) << ' ' << pointPolygonTest(contour, ins2, 0) << '\n';
+                        // }
+                        assert(pointPolygonTest(contour, ins1, 1) >= -eps);
+                        assert(pointPolygonTest(contour, ins2, 1) >= -eps);
                     }
                 }
             }
@@ -190,6 +233,12 @@ void Line::checkLines(vector<vector<vector<lin>>> &lines) {
     img.copyTo(lineImg);
     for (int i = 0; i < lines.size(); i++) {
         for (int j = 0; j < lines[i].size(); j++) {
+            if (i) {
+                line(lineImg, ver[i][j], ver[i - 1][j], Vec3b(0, 255, 0), 1);
+            }
+            if (j) {
+                line(lineImg, ver[i][j], ver[i][j - 1], Vec3b(0, 255, 0), 1);
+            }
             Scalar randColor = Scalar(rand() % 256, rand() % 256, rand() % 256);
             for (int k = 0; k < lines[i][j].size(); k++) {
                 line(lineImg, Point(lines[i][j][k].first + Point2d(0.5, 0.5)), Point(lines[i][j][k].second + Point2d(0.5, 0.5)), randColor, 1);
@@ -198,4 +247,43 @@ void Line::checkLines(vector<vector<vector<lin>>> &lines) {
     }
     imshow("lines after process", lineImg);
     waitKey(0);
+}
+
+void Line::getF(MatrixXd &F, vector<Point2f> &contour, lin l) {
+    double u[2], v[2];
+    for (int i = 0; i < 2; i++) {
+        Point2d p0 = contour[1] - contour[0];
+        Point2d p1 = contour[2] - contour[0];
+        Point2d p2 = contour[0] - contour[1] + contour[3] - contour[2];
+        Point2d p3 = l.first - Point2d(contour[0]);
+        double A = p2.x * p1.y - p2.y * p1.x;
+        double B = p0.x * p1.y - p0.y * p1.x + p3.x * p2.y - p3.y * p2.x;
+        double C = p3.x * p0.y - p3.y * p0.x;
+        if (A == 0) {
+            v[i] = -C / B;
+        }
+        else {
+            double delta = sqrt(B * B - 4 * A * C);
+            double tmp = -B - delta / A / 2;
+            if (tmp >= 0 && tmp <= 1) {
+                v[i] = tmp;
+            }
+            else {
+                v[i] = -B + delta / A / 2;
+            }
+        }
+        u[i] = (p3.x - p1.x * v[i]) / (p0.x + p2.x * v[i]);
+    }
+    F.resize(4, 8);
+    F <<
+        (1 - u[0]) * (1 - v[0]), 0, u[0] * (1 - v[0]), 0, v[0] * (1 - u[0]), 0, u[0] * v[0], 0,
+        0, (1 - u[0]) * (1 - v[0]), 0, u[0] * (1 - v[0]), 0, v[0] * (1 - u[0]), 0, u[0] * v[0],
+        (1 - u[1]) * (1 - v[1]), 0, u[1] * (1 - v[1]), 0, v[1] * (1 - u[1]), 0, u[1] * v[1], 0,
+        0, (1 - u[1]) * (1 - v[1]), 0, u[1] * (1 - v[1]), 0, v[1] * (1 - u[1]), 0, u[1] * v[1];
+    MatrixXd minus(2, 4);
+    minus << -1, 0, 1, 0, 0, -1, 0, 1;
+    double dis = sqrt((l.first.x - l.second.x) * (l.first.x - l.second.x) + (l.first.y - l.second.y) * (l.first.y - l.second.y));
+    minus /= dis;
+    F = minus * F;
+    return;
 }

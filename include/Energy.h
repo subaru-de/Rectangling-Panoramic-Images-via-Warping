@@ -278,7 +278,8 @@ void Energy::getB() {
 
 void Energy::getC() {
     vector<vector<vector<lin>>> lines;
-    Line(img, ver, lines);
+    vector<vector<vector<MatrixXd>>> F;
+    Line(img, ver, lines, F);
 }
 
 // double Energy::shapeTerm() {
