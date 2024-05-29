@@ -35,11 +35,11 @@ public:
     void optimize();
     void convertV();
     // 为了减少一次遍历，在 shapeTerm 函数中同时执行 getV 与 getA
-    double shapeTerm();
+    // double shapeTerm();
     // 在 lineTerm 中执行 getC
-    double lineTerm();
+    // double lineTerm();
     // 在 boundTerm 中执行 getB
-    double boundTerm();
+    // double boundTerm();
 };
 
 Energy::Energy(Mat &img, vecvecP &ver, vecvecP &nver):
@@ -105,14 +105,14 @@ void Energy::optimize() {
             }
         }
     }
-    outfile.open("/home/nxte/codes/Rectangling-Panoramic-Images-via-Warping/include/matrix_output.txt");
-    if (outfile.is_open()) {
-        outfile << L << '\n';
-        outfile.close();
-        std::cout << "矩阵已成功写入文件 matrix_output.txt" << std::endl;
-    } else {
-        std::cerr << "无法打开文件" << std::endl;
-    }
+    // outfile.open("/home/nxte/codes/Rectangling-Panoramic-Images-via-Warping/include/matrix_output.txt");
+    // if (outfile.is_open()) {
+    //     outfile << L << '\n';
+    //     outfile.close();
+    //     std::cout << "矩阵已成功写入文件 matrix_output.txt" << std::endl;
+    // } else {
+    //     std::cerr << "无法打开文件" << std::endl;
+    // }
     L.makeCompressed();
     // cout << L.rows() << ' ' << L.cols() << " ---------------\n";
     assert(flag == 1);
@@ -178,8 +178,9 @@ void Energy::convertV() {
             nver[i][j].x = V(cnt, 0) + 0.5;
             nver[i][j].y = V(cnt + 1, 0) + 0.5;
             // cout << nver[i][j] << ' '<< V(cnt, 0) << ' ' << V(cnt + 1, 0) << '\n';
-            cout << nver[i][j] << ' ';
-        } cout << '\n';
+            // cout << nver[i][j] << ' ';
+        }
+        // cout << '\n';
     }
 }
 

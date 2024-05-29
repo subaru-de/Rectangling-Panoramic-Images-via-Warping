@@ -4,7 +4,7 @@
 # compile CXX with /usr/bin/c++
 CXX_DEFINES = 
 
-CXX_INCLUDES = -I/home/nxte/codes/Rectangling-Panoramic-Images-via-Warping/include -I/home/nxte/codes/Rectangling-Panoramic-Images-via-Warping/glad/include -isystem /usr/local/include/opencv4
+CXX_INCLUDES = -I/home/nxte/codes/Rectangling-Panoramic-Images-via-Warping/include -I/home/nxte/codes/Rectangling-Panoramic-Images-via-Warping/glad/include -I/home/nxte/codes/Rectangling-Panoramic-Images-via-Warping -isystem /usr/local/include/opencv4
 
 CXX_FLAGS = 
 

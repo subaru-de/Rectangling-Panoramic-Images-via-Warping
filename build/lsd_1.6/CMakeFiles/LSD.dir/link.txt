@@ -1,0 +1,2 @@
+/usr/bin/ar qc libLSD.a CMakeFiles/LSD.dir/lsd.c.o
+/usr/bin/ranlib libLSD.a

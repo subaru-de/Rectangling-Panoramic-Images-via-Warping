@@ -4,3 +4,6 @@
 /home/nxte/codes/Rectangling-Panoramic-Images-via-Warping/build/glad/CMakeFiles/glad.dir
 /home/nxte/codes/Rectangling-Panoramic-Images-via-Warping/build/glad/CMakeFiles/edit_cache.dir
 /home/nxte/codes/Rectangling-Panoramic-Images-via-Warping/build/glad/CMakeFiles/rebuild_cache.dir
+/home/nxte/codes/Rectangling-Panoramic-Images-via-Warping/build/lsd_1.6/CMakeFiles/LSD.dir
+/home/nxte/codes/Rectangling-Panoramic-Images-via-Warping/build/lsd_1.6/CMakeFiles/edit_cache.dir
+/home/nxte/codes/Rectangling-Panoramic-Images-via-Warping/build/lsd_1.6/CMakeFiles/rebuild_cache.dir

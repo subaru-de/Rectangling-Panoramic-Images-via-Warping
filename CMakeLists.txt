@@ -23,5 +23,8 @@ include_directories(
 add_subdirectory(glad)
 target_link_libraries(Rectangling glad)
 
+add_subdirectory(lsd_1.6)
+target_link_libraries(Rectangling LSD)
+
 
 # SET(CMAKE_BUILD_TYPE "Release")

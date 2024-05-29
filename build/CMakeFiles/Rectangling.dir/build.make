@@ -102,6 +102,7 @@ Rectangling: /usr/local/lib/libopencv_stitching.so.4.9.0
 Rectangling: /usr/local/lib/libopencv_video.so.4.9.0
 Rectangling: /usr/local/lib/libopencv_videoio.so.4.9.0
 Rectangling: glad/libglad.a
+Rectangling: lsd_1.6/libLSD.a
 Rectangling: /usr/lib/x86_64-linux-gnu/libGLX.so
 Rectangling: /usr/lib/x86_64-linux-gnu/libOpenGL.so
 Rectangling: /usr/local/lib/libopencv_imgcodecs.so.4.9.0

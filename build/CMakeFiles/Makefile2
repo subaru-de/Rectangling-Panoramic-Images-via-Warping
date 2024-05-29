@@ -65,15 +65,18 @@ CMAKE_BINARY_DIR = /home/nxte/codes/Rectangling-Panoramic-Images-via-Warping/bui
 # The main recursive "all" target.
 all: CMakeFiles/Rectangling.dir/all
 all: glad/all
+all: lsd_1.6/all
 .PHONY : all
 
 # The main recursive "preinstall" target.
 preinstall: glad/preinstall
+preinstall: lsd_1.6/preinstall
 .PHONY : preinstall
 
 # The main recursive "clean" target.
 clean: CMakeFiles/Rectangling.dir/clean
 clean: glad/clean
+clean: lsd_1.6/clean
 .PHONY : clean
 
 #=============================================================================
@@ -92,18 +95,34 @@ glad/clean: glad/CMakeFiles/glad.dir/clean
 .PHONY : glad/clean
 
 #=============================================================================
+# Directory level rules for directory lsd_1.6
+
+# Recursive "all" directory target.
+lsd_1.6/all: lsd_1.6/CMakeFiles/LSD.dir/all
+.PHONY : lsd_1.6/all
+
+# Recursive "preinstall" directory target.
+lsd_1.6/preinstall:
+.PHONY : lsd_1.6/preinstall
+
+# Recursive "clean" directory target.
+lsd_1.6/clean: lsd_1.6/CMakeFiles/LSD.dir/clean
+.PHONY : lsd_1.6/clean
+
+#=============================================================================
 # Target rules for target CMakeFiles/Rectangling.dir
 
 # All Build rule for target.
 CMakeFiles/Rectangling.dir/all: glad/CMakeFiles/glad.dir/all
+CMakeFiles/Rectangling.dir/all: lsd_1.6/CMakeFiles/LSD.dir/all
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Rectangling.dir/build.make CMakeFiles/Rectangling.dir/depend
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Rectangling.dir/build.make CMakeFiles/Rectangling.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/nxte/codes/Rectangling-Panoramic-Images-via-Warping/build/CMakeFiles --progress-num=1,2 "Built target Rectangling"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/nxte/codes/Rectangling-Panoramic-Images-via-Warping/build/CMakeFiles --progress-num=3,4 "Built target Rectangling"
 .PHONY : CMakeFiles/Rectangling.dir/all
 
 # Build rule for subdir invocation for target.
 CMakeFiles/Rectangling.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/nxte/codes/Rectangling-Panoramic-Images-via-Warping/build/CMakeFiles 4
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/nxte/codes/Rectangling-Panoramic-Images-via-Warping/build/CMakeFiles 6
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 CMakeFiles/Rectangling.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/nxte/codes/Rectangling-Panoramic-Images-via-Warping/build/CMakeFiles 0
 .PHONY : CMakeFiles/Rectangling.dir/rule
@@ -124,7 +143,7 @@ CMakeFiles/Rectangling.dir/clean:
 glad/CMakeFiles/glad.dir/all:
 	$(MAKE) $(MAKESILENT) -f glad/CMakeFiles/glad.dir/build.make glad/CMakeFiles/glad.dir/depend
 	$(MAKE) $(MAKESILENT) -f glad/CMakeFiles/glad.dir/build.make glad/CMakeFiles/glad.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/nxte/codes/Rectangling-Panoramic-Images-via-Warping/build/CMakeFiles --progress-num=3,4 "Built target glad"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/nxte/codes/Rectangling-Panoramic-Images-via-Warping/build/CMakeFiles --progress-num=5,6 "Built target glad"
 .PHONY : glad/CMakeFiles/glad.dir/all
 
 # Build rule for subdir invocation for target.
@@ -142,6 +161,32 @@ glad: glad/CMakeFiles/glad.dir/rule
 glad/CMakeFiles/glad.dir/clean:
 	$(MAKE) $(MAKESILENT) -f glad/CMakeFiles/glad.dir/build.make glad/CMakeFiles/glad.dir/clean
 .PHONY : glad/CMakeFiles/glad.dir/clean
+
+#=============================================================================
+# Target rules for target lsd_1.6/CMakeFiles/LSD.dir
+
+# All Build rule for target.
+lsd_1.6/CMakeFiles/LSD.dir/all:
+	$(MAKE) $(MAKESILENT) -f lsd_1.6/CMakeFiles/LSD.dir/build.make lsd_1.6/CMakeFiles/LSD.dir/depend
+	$(MAKE) $(MAKESILENT) -f lsd_1.6/CMakeFiles/LSD.dir/build.make lsd_1.6/CMakeFiles/LSD.dir/build
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/nxte/codes/Rectangling-Panoramic-Images-via-Warping/build/CMakeFiles --progress-num=1,2 "Built target LSD"
+.PHONY : lsd_1.6/CMakeFiles/LSD.dir/all
+
+# Build rule for subdir invocation for target.
+lsd_1.6/CMakeFiles/LSD.dir/rule: cmake_check_build_system
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/nxte/codes/Rectangling-Panoramic-Images-via-Warping/build/CMakeFiles 2
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 lsd_1.6/CMakeFiles/LSD.dir/all
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/nxte/codes/Rectangling-Panoramic-Images-via-Warping/build/CMakeFiles 0
+.PHONY : lsd_1.6/CMakeFiles/LSD.dir/rule
+
+# Convenience name for target.
+LSD: lsd_1.6/CMakeFiles/LSD.dir/rule
+.PHONY : LSD
+
+# clean rule for target.
+lsd_1.6/CMakeFiles/LSD.dir/clean:
+	$(MAKE) $(MAKESILENT) -f lsd_1.6/CMakeFiles/LSD.dir/build.make lsd_1.6/CMakeFiles/LSD.dir/clean
+.PHONY : lsd_1.6/CMakeFiles/LSD.dir/clean
 
 #=============================================================================
 # Special targets to cleanup operation of make.

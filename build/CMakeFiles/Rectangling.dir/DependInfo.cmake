@@ -14,6 +14,7 @@ set(CMAKE_DEPENDS_DEPENDENCY_FILES
 # Targets to which this target links.
 set(CMAKE_TARGET_LINKED_INFO_FILES
   "/home/nxte/codes/Rectangling-Panoramic-Images-via-Warping/build/glad/CMakeFiles/glad.dir/DependInfo.cmake"
+  "/home/nxte/codes/Rectangling-Panoramic-Images-via-Warping/build/lsd_1.6/CMakeFiles/LSD.dir/DependInfo.cmake"
   )
 
 # Fortran module output directory.

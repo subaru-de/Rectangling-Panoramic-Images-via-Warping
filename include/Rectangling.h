@@ -58,7 +58,7 @@ void Rectangling::init() {
     // 初始化 mask，mask 应该在 insertSeam 之后更新
     // 接下来需要保证找到的 seam 在 mask 之内
     /* -------- get mask -------- */
-    const double cornerEps = 300;
+    const double cornerEps = 350;
     mask.create(img.size(), CV_8UC1);
     mask.setTo(Scalar(1));
     for (int i = 0; i < img.rows; i++) {
@@ -142,7 +142,7 @@ img(image) {
     mesh.displace(dispV, dispH);
 
     showMesh(mesh, 1, 1);
-    // mesh.callEnergy();
+    mesh.callEnergy();
     mesh.callGL();
     showMesh(mesh, 1, 0);
 }

@@ -142,6 +142,19 @@ glad/fast:
 	$(MAKE) $(MAKESILENT) -f glad/CMakeFiles/glad.dir/build.make glad/CMakeFiles/glad.dir/build
 .PHONY : glad/fast
 
+#=============================================================================
+# Target rules for targets named LSD
+
+# Build rule for target.
+LSD: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 LSD
+.PHONY : LSD
+
+# fast build rule for target.
+LSD/fast:
+	$(MAKE) $(MAKESILENT) -f lsd_1.6/CMakeFiles/LSD.dir/build.make lsd_1.6/CMakeFiles/LSD.dir/build
+.PHONY : LSD/fast
+
 Rectangling.o: Rectangling.cpp.o
 .PHONY : Rectangling.o
 
@@ -174,6 +187,7 @@ help:
 	@echo "... depend"
 	@echo "... edit_cache"
 	@echo "... rebuild_cache"
+	@echo "... LSD"
 	@echo "... Rectangling"
 	@echo "... glad"
 	@echo "... Rectangling.o"
