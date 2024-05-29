@@ -63,121 +63,82 @@ img(img), ver(ver), nver(nver),
 A(MAXNq, MAXV), B(MAXB, MAXV), C(0, MAXV),
 V(MAXV, 1), Y(0, 1) {
     init();
-    cout << getEnergy() << '\n';
     optimize();
     cout << getEnergy() << '\n';
 }
 
 double Energy::getEnergy() {
     double E = 0.0;
-    // E += (V.transpose() * A.transpose() * A * V)(0, 0);
     VectorXd tmp = A * V;
-    E += tmp.dot(tmp) / MAXNq;
+    E += tmp.dot(tmp);
+    tmp = C * V;
+    E += tmp.dot(tmp);
     tmp = B * V - Y.block(Y.rows() - MAXB, 0, MAXB, 1);
     E += tmp.dot(tmp);
-    // E += lambdaLine * lineTerm();
     return E;
 }
 
 void Energy::optimize() {
     SparseMatrix<double> AA = A.transpose() * A;
-    std::ofstream outfile;
-    // outfile.open("/home/nxte/codes/Rectangling-Panoramic-Images-via-Warping/include/matrix1_output.txt");
-    // if (outfile.is_open()) {
-    //     outfile << A << '\n';
-    //     outfile.close();
-    //     std::cout << "矩阵已成功写入文件 matrix1_output.txt" << std::endl;
-    // } else {
-    //     std::cerr << "无法打开文件" << std::endl;
-    // }
-
-
+    SparseMatrix<double> CC = C.transpose() * C;
     // SparseMatrix<double> AA = A;
-    cout << AA.rows() << "qwqwq\n";
-    SparseMatrix<double> L(AA.rows() + B.rows(), AA.cols());
-    MatrixXd YY(Y.rows() + AA.rows(), 1);
-    YY << MatrixXd::Zero(AA.rows(), 1), Y;
-    Y = YY;
-    // 竖直方向上 concat 矩阵 AA 和 B
-    for (int k = 0; k < AA.outerSize(); k++) {
-        for (SparseMatrix<double>::InnerIterator it(AA, k); it; ++it) {
-            L.insert(it.row(), it.col()) = it.value();
-        }
-    }
-    bool flag = 0;
-    for (int k = 0; k < B.outerSize(); k++) {
-        for (SparseMatrix<double>::InnerIterator it(B, k); it; ++it) {
-            L.insert(it.row() + AA.rows(), it.col()) = it.value();
-            if (it.value() != 0) {
-                // cout << it.value() << '\t' << it.row() << ' ' << it.col() << '\n';
-                flag = 1;
+    // std::ofstream outfile;
+
+    for (int iter = 0; iter < 10; iter++) {
+        getC();
+        cout << "Energy before iteration #" << iter << ": "<< getEnergy() << '\n';
+        SparseMatrix<double> L(AA.rows() + CC.rows() + B.rows(), AA.cols());
+        MatrixXd YY(Y.rows() + AA.rows() + CC.rows(), 1);
+        YY << MatrixXd::Zero(AA.rows() + CC.rows(), 1), Y;
+        Y = YY;
+
+        // 竖直方向上 concat 矩阵 AA CC B
+        for (int k = 0; k < AA.outerSize(); k++) {
+            for (SparseMatrix<double>::InnerIterator it(AA, k); it; ++it) {
+                L.insert(it.row(), it.col()) = it.value();
             }
         }
+        for (int k = 0; k < CC.outerSize(); k++) {
+            for (SparseMatrix<double>::InnerIterator it(CC, k); it; ++it) {
+                L.insert(it.row() + AA.rows(), it.col()) = it.value();
+            }
+        }
+        for (int k = 0; k < B.outerSize(); k++) {
+            for (SparseMatrix<double>::InnerIterator it(B, k); it; ++it) {
+                L.insert(it.row() + AA.rows() + CC.rows(), it.col()) = it.value();
+            }
+        }
+        L.makeCompressed();
+        // cout << L.rows() << ' ' << L.cols() << " ---------------\n";
+        // outfile.open("/home/nxte/codes/Rectangling-Panoramic-Images-via-Warping/include/matrix_output.txt");
+        // if (outfile.is_open()) {
+        //     outfile << L << '\n';
+        //     outfile.close();
+        //     std::cout << "矩阵已成功写入文件 matrix_output.txt" << std::endl;
+        // } else {
+        //     std::cerr << "无法打开文件" << std::endl;
+        // }
+
+        // L * V = Y
+        SparseQR<SparseMatrix<double>, COLAMDOrdering<int>> solver;
+        solver.compute(L);
+        if (solver.info() != Success) {
+            std::cerr << "Decomposition failed!" << std::endl;
+            return;
+        }
+        V = solver.solve(Y);
+        if (solver.info() != Success) {
+            std::cerr << "Solving failed!" << std::endl;
+            return;
+        }
+
+        // 计算条件数（估计）
+        // Eigen::SparseMatrix<double> R = solver.matrixR();
+        // Eigen::VectorXd diagR = R.diagonal();
+        // double cond_number = diagR.array().abs().maxCoeff() / diagR.array().abs().minCoeff();
+
+        // std::cout << "Estimated condition number: " << cond_number << std::endl;
     }
-    // outfile.open("/home/nxte/codes/Rectangling-Panoramic-Images-via-Warping/include/matrix_output.txt");
-    // if (outfile.is_open()) {
-    //     outfile << L << '\n';
-    //     outfile.close();
-    //     std::cout << "矩阵已成功写入文件 matrix_output.txt" << std::endl;
-    // } else {
-    //     std::cerr << "无法打开文件" << std::endl;
-    // }
-    L.makeCompressed();
-    // cout << L.rows() << ' ' << L.cols() << " ---------------\n";
-    assert(flag == 1);
-
-    // // 创建一个正则化参数
-    // double lambda = 0.1;
-
-    // // 创建正则化项
-    // Eigen::SparseMatrix<double> I(L.cols(), L.cols());
-    // I.setIdentity();
-
-    // // 构造增强矩阵
-    // Eigen::SparseMatrix<double> L_reg = Eigen::SparseMatrix<double>(L.rows() + L.cols(), L.cols());
-    // Eigen::MatrixXd Y_reg = Eigen::MatrixXd(L.rows() + L.cols(), 1);
-
-    // // 设置上半部分
-    // for (int k = 0; k < L.outerSize(); ++k) {
-    //     for (Eigen::SparseMatrix<double>::InnerIterator it(L, k); it; ++it) {
-    //         L_reg.insert(it.row(), it.col()) = it.value();
-    //     }
-    // }
-
-    // // 设置下半部分
-    // for (int k = 0; k < I.outerSize(); ++k) {
-    //     for (Eigen::SparseMatrix<double>::InnerIterator it(I, k); it; ++it) {
-    //         L_reg.insert(L.rows() + it.row(), it.col()) = lambda * it.value();
-    //     }
-    // }
-    // L_reg.makeCompressed();
-
-    // Y_reg.topRows(L.rows()) = Y;
-    // Y_reg.bottomRows(L.cols()).setZero();
-
-    // L * V = Y
-    SparseQR<SparseMatrix<double>, COLAMDOrdering<int>> solver;
-    solver.compute(L);
-    // solver.compute(AA);
-    if (solver.info() != Success) {
-        std::cerr << "Decomposition failed!" << std::endl;
-        return;
-    }
-    V = solver.solve(Y);
-    // V = solver.solve(MatrixXd::Zero(AA.rows(), 1));
-    if (solver.info() != Success) {
-        std::cerr << "Solving failed!" << std::endl;
-        return;
-    }
-    // V = (L.transpose() * L).inverse() * L.transpose();
-
-    // 计算条件数（估计）
-    Eigen::SparseMatrix<double> R = solver.matrixR();
-    Eigen::VectorXd diagR = R.diagonal();
-    double cond_number = diagR.array().abs().maxCoeff() / diagR.array().abs().minCoeff();
-
-    std::cout << "Estimated condition number: " << cond_number << std::endl;
-
     convertV();
 }
 
@@ -342,7 +303,6 @@ void Energy::init() {
     getV();
     getA();
     getB();
-    getC();
 }
 
 void Energy::getTheta(vector<vector<vector<lin>>> &lines, vector<vector<vector<MatrixXd>>> &F) {
