@@ -58,9 +58,9 @@ void Rectangling::init() {
     // 初始化 mask，mask 应该在 insertSeam 之后更新
     // 接下来需要保证找到的 seam 在 mask 之内
     /* -------- get mask -------- */
-    const double cornerEps = 350;
+    const double cornerEps = 300;
     mask.create(img.size(), CV_8UC1);
-    mask.setTo(Scalar(1));
+    mask.setTo(Scalar(255));
     for (int i = 0; i < img.rows; i++) {
         for (int j = 0; j < img.cols; j++) {
             Vec3d de = img.at<Vec3b>(i, j);
@@ -101,17 +101,24 @@ void Rectangling::init() {
             else break;
         }
     }
+    // Mat erodeImg, dilateImg;
+    // Mat element = getStructuringElement(MORPH_ELLIPSE, Size(5, 5));
+    // dilate(mask, dilateImg, element);
+    // dilate(dilateImg, dilateImg, element);
+    // dilate(dilateImg, dilateImg, element);
+    // dilate(dilateImg, dilateImg, element);
+    // erode(dilateImg, erodeImg, element);
 
     /* -------- show mask -------- */
-    Mat outImg;
-    outImg.create(img.size(), CV_8UC3);
-    for (int i = 0; i < img.rows; i++) {
-        for (int j = 0; j < img.cols; j++) {
-            if (mask.at<uchar>(i, j)) outImg.at<Vec3b>(i, j) = White;
-            else outImg.at<Vec3b>(i, j) = Black;
-        }
-    }
-    imshow("Image", outImg);
+    // Mat outImg;
+    // outImg.create(img.size(), CV_8UC3);
+    // for (int i = 0; i < img.rows; i++) {
+    //     for (int j = 0; j < img.cols; j++) {
+    //         if (mask.at<uchar>(i, j)) outImg.at<Vec3b>(i, j) = White;
+    //         else outImg.at<Vec3b>(i, j) = Black;
+    //     }
+    // }
+    imshow("Image", mask);
     waitKey(0);
     
     // 初始化位移场
