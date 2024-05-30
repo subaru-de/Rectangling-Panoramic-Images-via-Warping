@@ -39,8 +39,8 @@ public:
         -1, 0, 1
     );
     Seam(const Mat &img);
-    void insertVertical(Mat &img, Mat &mask, Mat &dispV, Mat &litSeam, BorderType BType);
-    void insertHorizontal(Mat &img, Mat &mask, Mat &dispH, Mat &litSeam, BorderType BType);
+    void insertVertical(Mat &img, Mat &mask, Mat &dispV, Mat &dispH, Mat &litSeam, BorderType BType);
+    void insertHorizontal(Mat &img, Mat &mask, Mat &dispV, Mat &dispH, Mat &litSeam, BorderType BType);
 };
 
 Seam::Seam(const Mat &img) {
@@ -87,7 +87,7 @@ Seam::Seam(const Mat &img) {
     // !!! check if E is right.
 }
 
-void Seam::insertVertical(Mat &img, Mat &mask, Mat &dispV, Mat &litSeam, BorderType BType) {
+void Seam::insertVertical(Mat &img, Mat &mask, Mat &dispV, Mat &dispH, Mat &litSeam, BorderType BType) {
     // cout << "-------- insert vertical seam --------\n";
     // cout << "sub-image size: " << img.size() << '\n';
     // 保证找出的 seam 在 mask == 1 范围内
@@ -193,6 +193,7 @@ void Seam::insertVertical(Mat &img, Mat &mask, Mat &dispV, Mat &litSeam, BorderT
                 img.at<Vec3b>(i, j) = img.at<Vec3b>(i, j - 1);
                 mask.at<uchar>(i, j) = mask.at<uchar>(i, j - 1);
                 dispV.at<int>(i, j) = dispV.at<int>(i, j - 1);
+                dispH.at<int>(i, j) = dispH.at<int>(i, j - 1);
                 dispV.at<int>(i, j)--;
             }
             litSeam.at<Vec3b>(verSeam[i].x, verSeam[i].y) = Orange;
@@ -204,7 +205,9 @@ void Seam::insertVertical(Mat &img, Mat &mask, Mat &dispV, Mat &litSeam, BorderT
                 if (mask.at<uchar>(verSeam[i].x, verSeam[i].y - 1)) mask.at<uchar>(verSeam[i].x, verSeam[i].y - 1) = 2;
                 Vec3d tmp = (Vec3d)img.at<Vec3b>(verSeam[i].x, verSeam[i].y) + (Vec3d)img.at<Vec3b>(verSeam[i].x, verSeam[i].y - 1);
                 img.at<Vec3b>(verSeam[i].x, verSeam[i].y) = tmp / 2.0;
+
                 // img.at<Vec3b>(verSeam[i].x, verSeam[i].y) = Orange;
+                // dispV.at<int>(verSeam[i].x, verSeam[i].y)--;
             }
         }
     }
@@ -215,6 +218,7 @@ void Seam::insertVertical(Mat &img, Mat &mask, Mat &dispV, Mat &litSeam, BorderT
                 img.at<Vec3b>(i, j) = img.at<Vec3b>(i, j + 1);
                 mask.at<uchar>(i, j) = mask.at<uchar>(i, j + 1);
                 dispV.at<int>(i, j) = dispV.at<int>(i, j + 1);
+                dispH.at<int>(i, j) = dispH.at<int>(i, j + 1);
                 dispV.at<int>(i, j)++;
             }
             litSeam.at<Vec3b>(verSeam[i].x, verSeam[i].y) = Orange;
@@ -226,13 +230,15 @@ void Seam::insertVertical(Mat &img, Mat &mask, Mat &dispV, Mat &litSeam, BorderT
                 if (mask.at<uchar>(verSeam[i].x, verSeam[i].y + 1)) mask.at<uchar>(verSeam[i].x, verSeam[i].y + 1) = 2;
                 Vec3d tmp = (Vec3d)img.at<Vec3b>(verSeam[i].x, verSeam[i].y) + (Vec3d)img.at<Vec3b>(verSeam[i].x, verSeam[i].y + 1);
                 img.at<Vec3b>(verSeam[i].x, verSeam[i].y) = tmp / 2.0;
+
                 // img.at<Vec3b>(verSeam[i].x, verSeam[i].y) = Orange;
+                // dispV.at<int>(verSeam[i].x, verSeam[i].y)++;
             }
         }
     }
 }
 
-void Seam::insertHorizontal(Mat &img, Mat &mask, Mat &dispH, Mat &litSeam, BorderType BType) {
+void Seam::insertHorizontal(Mat &img, Mat &mask, Mat &dispV, Mat &dispH, Mat &litSeam, BorderType BType) {
     // cout << "-------- insert horizontal seam --------\n";
     
     /* -------- Find Horizontal Seam -------- */
@@ -334,6 +340,7 @@ void Seam::insertHorizontal(Mat &img, Mat &mask, Mat &dispH, Mat &litSeam, Borde
                 img.at<Vec3b>(i, j) = img.at<Vec3b>(i - 1, j);
                 mask.at<uchar>(i, j) = mask.at<uchar>(i - 1, j);
                 dispH.at<int>(i, j) = dispH.at<int>(i - 1, j);
+                dispV.at<int>(i, j) = dispV.at<int>(i - 1, j);
                 dispH.at<int>(i, j)--;
             }
             litSeam.at<Vec3b>(horSeam[j].x, horSeam[j].y) = Orange;
@@ -345,7 +352,9 @@ void Seam::insertHorizontal(Mat &img, Mat &mask, Mat &dispH, Mat &litSeam, Borde
                 if (mask.at<uchar>(horSeam[j].x - 1, horSeam[j].y)) mask.at<uchar>(horSeam[j].x - 1, horSeam[j].y) = 2;
                 Vec3d tmp = (Vec3d)img.at<Vec3b>(horSeam[j].x, horSeam[j].y) + (Vec3d)img.at<Vec3b>(horSeam[j].x - 1, horSeam[j].y);
                 img.at<Vec3b>(horSeam[j].x, horSeam[j].y) = tmp / 2.0;
+
                 // img.at<Vec3b>(horSeam[j].x, horSeam[j].y) = Orange;
+                // dispH.at<int>(horSeam[j].x, horSeam[j].y)--;
             }
         }
     }
@@ -356,6 +365,7 @@ void Seam::insertHorizontal(Mat &img, Mat &mask, Mat &dispH, Mat &litSeam, Borde
                 img.at<Vec3b>(i, j) = img.at<Vec3b>(i + 1, j);
                 mask.at<uchar>(i, j) = mask.at<uchar>(i + 1, j);
                 dispH.at<int>(i, j) = dispH.at<int>(i + 1, j);
+                dispV.at<int>(i, j) = dispV.at<int>(i + 1, j);
                 dispH.at<int>(i, j)++;
             }
             litSeam.at<Vec3b>(horSeam[j].x, horSeam[j].y) = Orange;
@@ -367,7 +377,9 @@ void Seam::insertHorizontal(Mat &img, Mat &mask, Mat &dispH, Mat &litSeam, Borde
                 if (mask.at<uchar>(horSeam[j].x + 1, horSeam[j].y)) mask.at<uchar>(horSeam[j].x + 1, horSeam[j].y) = 2;
                 Vec3d tmp = (Vec3d)img.at<Vec3b>(horSeam[j].x, horSeam[j].y) + (Vec3d)img.at<Vec3b>(horSeam[j].x + 1, horSeam[j].y);
                 img.at<Vec3b>(horSeam[j].x, horSeam[j].y) = tmp / 2.0;
+
                 // img.at<Vec3b>(horSeam[j].x, horSeam[j].y) = Orange;
+                // dispH.at<int>(horSeam[j].x, horSeam[j].y)++;
             }
         }
     }

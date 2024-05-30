@@ -139,6 +139,7 @@ img(image) {
     showImg();
     
     insertSeam();
+    imshow("mask after", mask);
     showImg();
     writeImg("../img/out2.jpg");
     showSeam();
@@ -291,9 +292,11 @@ void Rectangling::insertSeam() {
             tmpImg = img(rect);
             tmpMask = mask(rect);
             tmpDispV = dispV(rect);
+            tmpDispH = dispH(rect);
             tmpLitSeam = litSeam(rect);
-            seam.insertVertical(tmpImg, tmpMask, tmpDispV, tmpLitSeam, verType);
+            seam.insertVertical(tmpImg, tmpMask, tmpDispV, tmpDispH, tmpLitSeam, verType);
             dispV(rect) = tmpDispV;
+            dispH(rect) = tmpDispH;
         }
         else { // Horizontal
             // get rect
@@ -301,9 +304,11 @@ void Rectangling::insertSeam() {
             // printf("H rect.x: %d\t rect.y: %d\t rect.width: %d\t rect.height: %d\n", rect.x, rect.y, rect.width, rect.height);
             tmpImg = img(rect);
             tmpMask = mask(rect);
+            tmpDispV = dispV(rect);
             tmpDispH = dispH(rect);
             tmpLitSeam = litSeam(rect);
-            seam.insertHorizontal(tmpImg, tmpMask, tmpDispH, tmpLitSeam, horType);
+            seam.insertHorizontal(tmpImg, tmpMask, tmpDispV, tmpDispH, tmpLitSeam, horType);
+            dispV(rect) = tmpDispV;
             dispH(rect) = tmpDispH;
         }
         img(rect) = tmpImg;
