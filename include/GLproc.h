@@ -37,7 +37,7 @@ private:
         uniform sampler2D texture1;
         void main() {
             FragColor = texture(texture1, TexCoord);
-        } 
+        }
     )";
 public:
     GLproc(Mat &img, vecvecP &ver, vecvecP &nver);
@@ -78,6 +78,10 @@ ver(ver), nver(nver) {
 
     glViewport(0, 0, SCR_WIDTH, SCR_HEIGHT);
     glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
+
+    GLint maxTextureSize;
+    glGetIntegerv(GL_MAX_TEXTURE_SIZE, &maxTextureSize);
+    cout << maxTextureSize << '\n';
 
     vector<GLfloat> vertices;
     vector<GLuint> indices;
@@ -151,9 +155,9 @@ void GLproc::getData(Mat &img, vecvecP &ver, vecvecP &nver, vector<GLfloat> &ver
         for (int j = 0; j < ver[i].size(); j++, cnt++) {
             // positions
             Point2f cur = nver[i][j];
-            cur.x /= 1.0f * SCR_WIDTH;
-            cur.y = SCR_HEIGHT - cur.y - 1.0f;
-            cur.y /= 1.0f * SCR_HEIGHT;
+            cur.x /= 1.0f * img.cols;
+            cur.y = img.rows - cur.y - 1.0f;
+            cur.y /= 1.0f * img.rows;
             cur *= 2.0f;
             cur -= Point2f(1.0f, 1.0f);
             vertices.push_back(cur.x);
@@ -164,8 +168,8 @@ void GLproc::getData(Mat &img, vecvecP &ver, vecvecP &nver, vector<GLfloat> &ver
 
             // texture Coord
             cur = ver[i][j];
-            cur.x /= 1.0f * SCR_WIDTH;
-            cur.y /= 1.0f * SCR_HEIGHT;
+            cur.x /= 1.0f * img.cols;
+            cur.y /= 1.0f * img.rows;
             vertices.push_back(cur.x);
             vertices.push_back(cur.y);
             assert(cur.x >= 0 && cur.x <= 1 && cur.y >= 0 && cur.y <= 1);
@@ -227,12 +231,14 @@ GLuint GLproc::loadTexture(Mat& img) {
     glGenTextures(1, &textureID);
     glBindTexture(GL_TEXTURE_2D, textureID);
 
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, SCR_WIDTH, SCR_HEIGHT, 0, GL_BGR, GL_UNSIGNED_BYTE, img.data);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, img.cols, img.rows, 0, GL_BGR, GL_UNSIGNED_BYTE, img.data);
 
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+    glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 
     return textureID;
 }

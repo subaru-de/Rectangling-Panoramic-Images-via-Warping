@@ -101,13 +101,13 @@ void Rectangling::init() {
             else break;
         }
     }
-    // Mat erodeImg, dilateImg;
-    // Mat element = getStructuringElement(MORPH_ELLIPSE, Size(5, 5));
-    // dilate(mask, dilateImg, element);
-    // dilate(dilateImg, dilateImg, element);
-    // dilate(dilateImg, dilateImg, element);
-    // dilate(dilateImg, dilateImg, element);
-    // erode(dilateImg, erodeImg, element);
+    Mat erodeImg, dilateImg;
+    Mat element = getStructuringElement(MORPH_ELLIPSE, Size(5, 5));
+    erode(mask, erodeImg, element);
+    erode(erodeImg, erodeImg, element);
+    // erode(erodeImg, erodeImg, element);
+    // erode(erodeImg, erodeImg, element);
+    mask = erodeImg;
 
     /* -------- show mask -------- */
     // Mat outImg;
