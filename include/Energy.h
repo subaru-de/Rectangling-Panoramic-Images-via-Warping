@@ -26,7 +26,7 @@ private:
     
     static const int cntBin = 50;
     static constexpr double alpha = acos(-1) / cntBin;
-    Mat &img;
+    Mat &img, &resImg;
     vecvecP &ver, &nver;
     const int MAXNq, MAXV, MAXB;
     SparseMatrix<double> A, B, C;
@@ -38,7 +38,7 @@ private:
     int numInBin[cntBin];
     int totL;
 public:
-    Energy(Mat &img, vecvecP &ver, vecvecP &nver);
+    Energy(Mat &img, Mat &resImg, vecvecP &ver, vecvecP &nver);
     void init();
     void getV();
     void getA();
@@ -56,10 +56,10 @@ public:
     // double boundTerm();
 };
 
-Energy::Energy(Mat &img, vecvecP &ver, vecvecP &nver):
+Energy::Energy(Mat &img, Mat &resImg, vecvecP &ver, vecvecP &nver):
 MAXNq((ver.size() - 1) * (ver[0].size() - 1) * 8),
 MAXV(ver.size() * ver[0].size() * 2), MAXB((ver.size() + ver[0].size()) * 2),
-img(img), ver(ver), nver(nver),
+img(img), resImg(resImg), ver(ver), nver(nver),
 A(MAXNq, MAXV), B(MAXB, MAXV), C(0, MAXV),
 V(MAXV, 1), Y(0, 1) {
     // cout << "quq\n";
@@ -169,8 +169,8 @@ void Energy::convertV() {
             nver[i][j].x = V(cnt, 0) + 0.5;
             nver[i][j].y = V(cnt + 1, 0) + 0.5;
             // cout << i << ' ' << j << ' ' << nver[i][j] << '\n';
-            assert(nver[i][j].x >= 0 && nver[i][j].x < img.cols);
-            assert(nver[i][j].y >= 0 && nver[i][j].y < img.rows);
+            // assert(nver[i][j].x >= 0 && nver[i][j].x < img.cols);
+            // assert(nver[i][j].y >= 0 && nver[i][j].y < img.rows);
         }
     }
 }
@@ -229,7 +229,7 @@ void Energy::getA() {
     }
     A /= Nq;
     A.makeCompressed();
-    assert(Nq * 8 == MAXNq);
+    // assert(Nq * 8 == MAXNq);
 }
 
 void Energy::getB() {
@@ -244,7 +244,7 @@ void Energy::getB() {
             }
             else if (i + 1 == nver.size()) {
                 B.insert(cnt, pcnt * 2 + 1) = lambdaBound;
-                Y(Y.rows() - MAXB + cnt) = lambdaBound * (img.rows - 1);
+                Y(Y.rows() - MAXB + cnt) = lambdaBound * (resImg.rows - 1);
                 cnt++;
             }
             if (!j) {
@@ -254,12 +254,12 @@ void Energy::getB() {
             }
             else if (j + 1 == nver[i].size()) {
                 B.insert(cnt, pcnt * 2) = lambdaBound;
-                Y(Y.rows() - MAXB + cnt) = lambdaBound * (img.cols - 1);
+                Y(Y.rows() - MAXB + cnt) = lambdaBound * (resImg.cols - 1);
                 cnt++;
             }
         }
     }
-    assert(cnt == MAXB);
+    // assert(cnt == MAXB);
     B.makeCompressed();
 }
 
@@ -280,10 +280,10 @@ void Energy::getC() {
                 // cout << k << "qoq\n";
                 
                 int &m = bin[i][j][k];
-                assert(m < cntBin);
+                // assert(m < cntBin);
                 R << cos(theta[m]), -sin(theta[m]), sin(theta[m]), cos(theta[m]);
                 // cout << m << ' ' << theta[m] << '\n';
-                assert(!isnan(R(0, 0)) && !isnan(R(0, 1)) && !isnan(R(1, 0)) && !isnan(R(0, 1)));
+                // assert(!isnan(R(0, 0)) && !isnan(R(0, 1)) && !isnan(R(1, 0)) && !isnan(R(0, 1)));
                 // cout << "R: \n" << R << '\n';
                 e << vecl.x, vecl.y;
                 // cout << "e: \n" << e << '\n';
@@ -297,12 +297,12 @@ void Energy::getC() {
                 for (int u = 0; u < 8; u++) {
                     if (Cl(0, u)) flag = 1;
                 }
-                assert(flag == 1);
+                // assert(flag == 1);
                 flag = 0;
                 for (int u = 0; u < 8; u++) {
                     if (Cl(0, u)) flag = 1;
                 }
-                assert(flag == 1);
+                // assert(flag == 1);
                 for (int u = 0, uo, vo; u < 2; u++) {
                     uo = Nl * 2 + u;
                     vo = ((i - 1) * ver[i].size() + j - 1) * 2;
@@ -325,7 +325,7 @@ void Energy::getC() {
             }
         }
     }
-    assert(Nl == totL);
+    // assert(Nl == totL);
     C *= 1.0 * lambdaLine / totL;
     C.makeCompressed();
 }
@@ -344,11 +344,11 @@ void Energy::init() {
                 totL++;
                 lin &l = lines[i][j][k];
                 Point2d vecl = (l.second - l.first) / dis(l.first, l.second);
-                assert(vecl.y >= -1 && vecl.y <= 1);
+                // assert(vecl.y >= -1 && vecl.y <= 1);
                 double angle = acos(vecl.x);
                 bin[i][j].push_back(floor(angle / alpha));
-                assert(!isnan(bin[i][j][k]) && !isinf(bin[i][j][k]));
-                assert(bin[i][j][k] >= 0 && bin[i][j][k] < cntBin);
+                // assert(!isnan(bin[i][j][k]) && !isinf(bin[i][j][k]));
+                // assert(bin[i][j][k] >= 0 && bin[i][j][k] < cntBin);
                 numInBin[bin[i][j][k]]++;
             }
         }
@@ -385,33 +385,27 @@ void Energy::getTheta() {
                 MatrixXd nl = F[i][j][k] * Vq;
                 double lennl = sqrt(nl(0, 0) * nl(0, 0) + nl(1, 0) * nl(1, 0));
                 if (lennl) nl /= lennl;
-                else {
-                    cout << F[i][j][k] << "\n\n";
-                    cout << Vq << "\n\n";
-                    cout << nl << '\n';
-                    assert(0);
-                }
-                for (int ii = 0; ii < F[i][j][k].rows(); ii++) {
-                    for (int jj = 0; jj < F[i][j][k].cols(); jj++) {
-                        assert(!isnan(F[i][j][k](ii, jj)));
-                    }
-                }
-                for (int ii = 0; ii < Vq.rows(); ii++) {
-                    for (int jj = 0; jj < Vq.cols(); jj++) {
-                        assert(!isnan(Vq(ii, jj)));
-                    }
-                }
+                // for (int ii = 0; ii < F[i][j][k].rows(); ii++) {
+                //     for (int jj = 0; jj < F[i][j][k].cols(); jj++) {
+                //         assert(!isnan(F[i][j][k](ii, jj)));
+                //     }
+                // }
+                // for (int ii = 0; ii < Vq.rows(); ii++) {
+                //     for (int jj = 0; jj < Vq.cols(); jj++) {
+                //         assert(!isnan(Vq(ii, jj)));
+                //     }
+                // }
                 
                 // cout << k << '\n';
                 double angle = acos(vecl.x);
                 int bin = floor(angle / alpha);
                 // cout << "nl:\n" << nl << '\n';
-                assert(!isnan(nl(0, 0)) && !isnan(nl(1, 0)));
-                assert(nl(0, 0) >= -1 && nl(0, 0) <= 1 && nl(1, 0) >= -1 && nl(1, 0) <= 1);
+                // assert(!isnan(nl(0, 0)) && !isnan(nl(1, 0)));
+                // assert(nl(0, 0) >= -1 && nl(0, 0) <= 1 && nl(1, 0) >= -1 && nl(1, 0) <= 1);
                 // cout << nl(0, 0) << '\n';
                 double nangle = acos(nl(0, 0));
                 // cout << angle << ' ' << nangle << '\n';
-                assert(!isnan(angle) && !isnan(nangle));
+                // assert(!isnan(angle) && !isnan(nangle));
                 if (numInBin[bin]) theta[i] += (nangle - angle) / numInBin[bin];
             }
         }

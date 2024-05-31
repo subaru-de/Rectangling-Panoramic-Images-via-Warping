@@ -17,6 +17,7 @@ private:
     Mat &img, &resImg;
     vecvecP &ver, &nver;
     unsigned int SCR_WIDTH, SCR_HEIGHT;
+    bool saved;
     // vector<GLfloat> vertices;
     // vector<GLuint> indices;
     
@@ -46,23 +47,23 @@ public:
     static void framebuffer_size_callback(GLFWwindow* window, int width, int height);
     void processInput(GLFWwindow *window);
 
-    void getData(Mat &img, vecvecP &ver, vecvecP &nver, vector<GLfloat> &vertices, vector<GLuint> &indices);
+    void getData(vector<GLfloat> &vertices, vector<GLuint> &indices);
     GLuint compileShader(GLenum type, const char* source);
     GLuint createShaderProgram();
 
     GLuint loadTexture(Mat& img);
 };
 
-GLproc::GLproc(Mat &img, Mat &resImg(resImg), vecvecP &ver, vecvecP &nver):
-img(img), resImg(resImg), ver(ver), nver(nver) {
+GLproc::GLproc(Mat &img, Mat &resImg, vecvecP &ver, vecvecP &nver):
+img(img), resImg(resImg), ver(ver), nver(nver), saved(false) {
     glfwInit();
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
     //glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 
-    SCR_WIDTH = img.cols;
-    SCR_HEIGHT = img.rows;
+    SCR_WIDTH = resImg.cols;
+    SCR_HEIGHT = resImg.rows;
 
     GLFWwindow* window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "Result Image", NULL, NULL);
     if (window == NULL) {
@@ -82,11 +83,11 @@ img(img), resImg(resImg), ver(ver), nver(nver) {
 
     GLint maxTextureSize;
     glGetIntegerv(GL_MAX_TEXTURE_SIZE, &maxTextureSize);
-    cout << maxTextureSize << '\n';
+    // cout << maxTextureSize << '\n';
 
     vector<GLfloat> vertices;
     vector<GLuint> indices;
-    getData(img, ver, nver, vertices, indices);
+    getData(vertices, indices);
 
     GLuint textureID = loadTexture(img);
 
@@ -146,26 +147,45 @@ void GLproc::framebuffer_size_callback(GLFWwindow* window, int width, int height
 }
 
 void GLproc::processInput(GLFWwindow *window) {
-    if(glfwGetKey(window, GLFW_KEY_ENTER) == GLFW_PRESS) {
-        glReadPixels(0, 0, resImg.cols, resImg.rows, GL_RGB, GL_UNSIGNED_BYTE, resImg.data());
+    if(glfwGetKey(window, GLFW_KEY_ENTER) == GLFW_PRESS && !saved) {
+        saved = true;
+        // 确保 Mat 数据是连续的
+        if (!resImg.isContinuous()) {
+            cout << "Mat data is not continuous!" << std::endl;
+            return;
+        }
+        
+        glPixelStorei(GL_PACK_ALIGNMENT, 1); // f**k
+        std::vector<GLubyte> pixels(resImg.cols * resImg.rows * 3); // 3 for RGB
+        glReadPixels(0, 0, resImg.cols, resImg.rows, GL_BGR, GL_UNSIGNED_BYTE, pixels.data());
+
+        // 检查 OpenGL 错误
+        GLenum err;
+        while ((err = glGetError()) != GL_NO_ERROR) {
+            cout << "OpenGL error: " << err << std::endl;
+        }
+
+        Mat tmpImg(resImg.rows, resImg.cols, CV_8UC3, pixels.data());
         // 翻转
-        Mat flippedImage;
-        flip(resImg, flippedImage, 0);
-        resImg = flippedImage;
+        flip(tmpImg, tmpImg, 0);
+        tmpImg.copyTo(resImg);
+        // cout << "qnq" << std::endl;
+        cout << "opengl image saved\n";
+        // cout << &resImg << ' ' << &flippedImage << '\n';
     }
     if(glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
         glfwSetWindowShouldClose(window, true);
     }
 }
 
-void GLproc::getData(Mat &img, vecvecP &ver, vecvecP &nver, vector<GLfloat> &vertices, vector<GLuint> &indices) {
+void GLproc::getData(vector<GLfloat> &vertices, vector<GLuint> &indices) {
     for (int i = 0, cnt = 0; i < ver.size(); i++) {
         for (int j = 0; j < ver[i].size(); j++, cnt++) {
             // positions
             Point2f cur = nver[i][j];
-            cur.x /= 1.0f * img.cols;
-            cur.y = img.rows - cur.y - 1.0f;
-            cur.y /= 1.0f * img.rows;
+            cur.x /= 1.0f * SCR_WIDTH;
+            cur.y = SCR_HEIGHT - cur.y - 1.0f;
+            cur.y /= 1.0f * SCR_HEIGHT;
             cur *= 2.0f;
             cur -= Point2f(1.0f, 1.0f);
             vertices.push_back(cur.x);

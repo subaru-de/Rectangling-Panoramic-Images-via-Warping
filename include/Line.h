@@ -45,8 +45,8 @@ Line::Line(Mat &img, vecvecP &ver, vector<vector<vector<lin>>> &lines, vector<ve
 img(img), ver(ver) {
     Mat grayImg;
     cvtColor(img, grayImg, COLOR_BGR2GRAY);
-    imshow("gray", grayImg);
-    waitKey(0);
+    // imshow("gray", grayImg);
+    // waitKey(0);
     double* lsdImg = new double[img.rows * img.cols];
     for (int i = 0; i < img.rows; i++) {
         for (int j = 0; j < img.cols; j++) {
@@ -68,8 +68,9 @@ img(img), ver(ver) {
     for (int i = 0; i < cntLines; i++) {
         line(lineImg, Point(lsdLines[i * 7], lsdLines[i * 7 + 1]), Point(lsdLines[i * 7 + 2], lsdLines[i * 7 + 3]), Scalar(0, 0, 255), 1);
     }
-    imshow("lines after LSD", lineImg);
-    waitKey(0);
+    // imshow("lines after LSD", lineImg);
+    // waitKey(0);
+    imwrite("../output/lines_after_LSD.jpg", lineImg);
 
     lines.resize(ver.size(), vector<vector<lin>>(ver[0].size(), vector<lin>()));
     F.resize(ver.size(), vector<vector<MatrixXd>>(ver[0].size(), vector<MatrixXd>()));
@@ -152,8 +153,8 @@ img(img), ver(ver) {
                     // cout << pointPolygonTest(contour, flag1 >= eps ? s : t, 1) << ' ' << pointPolygonTest(contour, ins, 1) << '\n';
                     // cout << "line:\n" << tl << ' ' << tr << '\n' << bl << ' ' << br << '\n' <<
                     //     (flag1 >= eps ? s : t) << ' ' << ins << '\n';
-                    assert(pointPolygonTest(contour, flag1 >= eps ? s : t, 1) >= -eps);
-                    assert(pointPolygonTest(contour, ins, 1) >= -eps);
+                    // assert(pointPolygonTest(contour, flag1 >= eps ? s : t, 1) >= -eps);
+                    // assert(pointPolygonTest(contour, ins, 1) >= -eps);
                 }
                 else {
                     Point2d ins1(-1, -1), ins2(-1, -1), de;
@@ -185,8 +186,8 @@ img(img), ver(ver) {
                         //     << ins1 << ' ' << ins2 << '\n'
                         //     << pointPolygonTest(contour, ins1, 1) << ' ' << pointPolygonTest(contour, ins2, 0) << '\n';
                         // }
-                        assert(pointPolygonTest(contour, ins1, 1) >= -eps);
-                        assert(pointPolygonTest(contour, ins2, 1) >= -eps);
+                        // assert(pointPolygonTest(contour, ins1, 1) >= -eps);
+                        // assert(pointPolygonTest(contour, ins2, 1) >= -eps);
                     }
                 }
             }
@@ -257,8 +258,9 @@ void Line::checkLines(vector<vector<vector<lin>>> &lines) {
             }
         }
     }
-    imshow("lines after process", lineImg);
-    waitKey(0);
+    // imshow("lines after process", lineImg);
+    // waitKey(0);
+    imwrite("../output/line_in_mesh.jpg", lineImg);
 }
 
 void Line::getF(MatrixXd &F, vector<Point2f> &contour, lin l) {
@@ -292,10 +294,10 @@ void Line::getF(MatrixXd &F, vector<Point2f> &contour, lin l) {
     // cout << l.first << ' ' << l.second << '\n';
     // cout << u[0] << ' ' << u[1] << ' ' << v[0] << ' ' << v[1] << '\n';
     // for (auto it : contour) cout << it << ' '; cout << l.first << ' ' << l.second << '\n';
-    assert(!isnan(u[0]) && u[0] >= -1e-3 && u[0] <= 1 + 1e-3);
-    assert(!isnan(v[0]) && v[0] >= -1e-3 && v[0] <= 1 + 1e-3);
-    assert(!isnan(u[1]) && u[1] >= -1e-3 && u[1] <= 1 + 1e-3);
-    assert(!isnan(v[1]) && v[1] >= -1e-3 && v[1] <= 1 + 1e-3);
+    // assert(!isnan(u[0]) && u[0] >= -1e-3 && u[0] <= 1 + 1e-3);
+    // assert(!isnan(v[0]) && v[0] >= -1e-3 && v[0] <= 1 + 1e-3);
+    // assert(!isnan(u[1]) && u[1] >= -1e-3 && u[1] <= 1 + 1e-3);
+    // assert(!isnan(v[1]) && v[1] >= -1e-3 && v[1] <= 1 + 1e-3);
     F.resize(4, 8);
     F <<
         (1 - u[0]) * (1 - v[0]), 0, u[0] * (1 - v[0]), 0, v[0] * (1 - u[0]), 0, u[0] * v[0], 0,

@@ -1,5 +1,6 @@
 // #ifndef Rectangling
 // #define Rectangling
+#include <ctime>
 #include <vector>
 #include <string>
 #include <iostream>
@@ -25,7 +26,7 @@ enum DirectionType {
 class Rectangling {
 private:
     Mat &img;
-    Mat resImg;
+    Mat resImg, finImg;
     Mat img_bak;
     Mat mask;
     // x 对应的是 width，y 对应的是 height
@@ -43,10 +44,65 @@ public:
     void showMesh(Mesh &mesh, bool initial, bool showVer);
 };
 
+Rectangling::Rectangling(Mat &image):
+img(image) {
+    clock_t start_t = clock();
+    img.copyTo(img_bak);
+    init();
+    // showImg();
+    
+    insertSeam();
+    // imshow("mask after", mask);
+    // showImg();
+    imwrite("../output/after_seam_carving.jpg", img);
+    showSeam();
+
+    clock_t mid1_t = clock();
+    std::cout << ">>>> Seam Carving used ";
+    std::cout << (mid1_t - start_t) * 1000 / CLOCKS_PER_SEC << "ms\n";
+
+    resImg.create(img.rows, img.cols, CV_8UC3);
+    Mesh mesh(img, resImg);
+    showMesh(mesh, 0, 1);
+    img_bak.copyTo(img);
+    mesh.displace(dispV, dispH);
+
+    showMesh(mesh, 1, 1);
+    mesh.callEnergy();
+
+    clock_t mid2_t = clock();
+    std::cout << ">>>> Energy Optimization used ";
+    std::cout << (mid2_t - mid1_t) * 1000 / CLOCKS_PER_SEC << "ms\n";
+
+    mesh.callGL();
+    resImg = mesh.getRes();
+    imwrite("../output/result_before_Post_processing.jpg", resImg);
+
+    clock_t mid3_t = clock();
+
+    pair<double, double> scaleFactor = mesh.getScale();
+    // resImg.release();
+    finImg.create(img.rows / scaleFactor.second, img.cols / scaleFactor.first, CV_8UC3);
+    mesh.setRes(finImg);
+    mesh.callEnergy();
+
+    clock_t end_t = clock();
+    std::cout << ">>>> Post-Processing used ";
+    std::cout << (end_t - mid3_t) * 1000 / CLOCKS_PER_SEC << "ms\n";
+
+    mesh.callGL();
+    finImg = mesh.getRes();
+    showMesh(mesh, 1, 0);
+    imwrite("../output/result.jpg", finImg);
+
+    std::cout << "Established, used ";
+    std::cout << ((end_t - start_t) - (mid3_t - mid2_t)) * 1000 / CLOCKS_PER_SEC << "ms in total.\n";
+}
+
 void Rectangling::init() {
     Corner = img.at<Vec3b>(0);
     cout << "Size of the input image: " << img.size() << "\n";
-    cout << img.rows << ' ' << img.cols << '\n';
+    // cout << img.rows << ' ' << img.cols << '\n';
 
 
     /* -------- 有噪声 -------- */
@@ -119,8 +175,9 @@ void Rectangling::init() {
     //         else outImg.at<Vec3b>(i, j) = Black;
     //     }
     // }
-    imshow("Image", mask);
-    waitKey(0);
+    // imshow("Image", mask);
+    // waitKey(0);
+    imwrite("../output/mask.jpg", mask);
     
     // 初始化位移场
     dispV.create(img.size(), CV_32SC1);
@@ -131,32 +188,6 @@ void Rectangling::init() {
     // 初始化 litSeam
     litSeam.create(img.size(), CV_8UC3);
     litSeam.setTo(White);
-}
-
-Rectangling::Rectangling(Mat &image):
-img(image) {
-    img.copyTo(img_bak);
-    init();
-    showImg();
-    
-    insertSeam();
-    imshow("mask after", mask);
-    showImg();
-    writeImg("../img/out2.jpg");
-    showSeam();
-
-    Mesh mesh(img);
-    showMesh(mesh, 0, 1);
-    img_bak.copyTo(img);
-    mesh.displace(dispV, dispH);
-
-    showMesh(mesh, 1, 1);    
-    mesh.callEnergy();
-
-    resImg.create(img.size(), CV_8UC3);
-
-    mesh.callGL();
-    showMesh(mesh, 1, 0);
 }
 
 void Rectangling::getRect(Rect &rect, DirectionType DType, BorderType BType, int seamLen, int seamEndp) {
@@ -338,20 +369,28 @@ void Rectangling::showSeam() {
             }
         }
     }
-    imshow("Image", res);
-    waitKey(0);
-    imwrite("../img/img_with_seam.jpg", res);
+    // imshow("Image", res);
+    // waitKey(0);
+    imwrite("../output/img_with_seam.jpg", res);
 }
 
 void Rectangling::showMesh(Mesh &mesh, bool initial, bool showVer) {
+    // cout << "ooorz\n";
     Mat res;
-    img.copyTo(res);
+    // cout << "orz\n";
+    if (!showVer) {
+        finImg.copyTo(res);
+    }
+    else {
+        img.copyTo(res);
+    }
+    // cout << "oooooooo\n";
     mesh.putMesh(res, showVer);
-    imshow("Image", res);
-    waitKey(0);
-    if (!initial) imwrite("../img/img_with_mesh.jpg", res);
-    else if (showVer) imwrite("../img/initial_img_with_mesh.jpg", res);
-    else imwrite("../img/result_with_mesh.jpg", res);
+    // imshow("Image", res);
+    // waitKey(0);
+    if (!showVer) imwrite("../output/result_with_mesh.jpg", res);
+    else if (!initial) imwrite("../output/img_with_mesh.jpg", res);
+    else imwrite("../output/initial_img_with_mesh.jpg", res);
 }
 
 void Rectangling::writeImg(string filename) {
