@@ -25,6 +25,7 @@ enum DirectionType {
 class Rectangling {
 private:
     Mat &img;
+    Mat resImg;
     Mat img_bak;
     Mat mask;
     // x 对应的是 width，y 对应的是 height
@@ -149,8 +150,11 @@ img(image) {
     img_bak.copyTo(img);
     mesh.displace(dispV, dispH);
 
-    showMesh(mesh, 1, 1);
+    showMesh(mesh, 1, 1);    
     mesh.callEnergy();
+
+    resImg.create(img.size(), CV_8UC3);
+
     mesh.callGL();
     showMesh(mesh, 1, 0);
 }

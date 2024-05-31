@@ -14,6 +14,7 @@ typedef vector<vector<Point>> vecvecP;
 
 class GLproc {
 private:
+    Mat &img, &resImg;
     vecvecP &ver, &nver;
     unsigned int SCR_WIDTH, SCR_HEIGHT;
     // vector<GLfloat> vertices;
@@ -40,7 +41,7 @@ private:
         }
     )";
 public:
-    GLproc(Mat &img, vecvecP &ver, vecvecP &nver);
+    GLproc(Mat &img, Mat &resImg, vecvecP &ver, vecvecP &nver);
 
     static void framebuffer_size_callback(GLFWwindow* window, int width, int height);
     void processInput(GLFWwindow *window);
@@ -52,8 +53,8 @@ public:
     GLuint loadTexture(Mat& img);
 };
 
-GLproc::GLproc(Mat &img, vecvecP &ver, vecvecP &nver):
-ver(ver), nver(nver) {
+GLproc::GLproc(Mat &img, Mat &resImg(resImg), vecvecP &ver, vecvecP &nver):
+img(img), resImg(resImg), ver(ver), nver(nver) {
     glfwInit();
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
@@ -145,6 +146,13 @@ void GLproc::framebuffer_size_callback(GLFWwindow* window, int width, int height
 }
 
 void GLproc::processInput(GLFWwindow *window) {
+    if(glfwGetKey(window, GLFW_KEY_ENTER) == GLFW_PRESS) {
+        glReadPixels(0, 0, resImg.cols, resImg.rows, GL_RGB, GL_UNSIGNED_BYTE, resImg.data());
+        // 翻转
+        Mat flippedImage;
+        flip(resImg, flippedImage, 0);
+        resImg = flippedImage;
+    }
     if(glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
         glfwSetWindowShouldClose(window, true);
     }
@@ -163,7 +171,7 @@ void GLproc::getData(Mat &img, vecvecP &ver, vecvecP &nver, vector<GLfloat> &ver
             vertices.push_back(cur.x);
             vertices.push_back(cur.y);
             vertices.push_back(0.0f);
-            assert(cur.x >= -1 && cur.x < 1 && cur.y >= -1 && cur.y < 1);
+            // assert(cur.x >= -1 && cur.x < 1 && cur.y >= -1 && cur.y < 1);
             // cout << cur << ' ';
 
             // texture Coord
@@ -172,7 +180,7 @@ void GLproc::getData(Mat &img, vecvecP &ver, vecvecP &nver, vector<GLfloat> &ver
             cur.y /= 1.0f * img.rows;
             vertices.push_back(cur.x);
             vertices.push_back(cur.y);
-            assert(cur.x >= 0 && cur.x <= 1 && cur.y >= 0 && cur.y <= 1);
+            // assert(cur.x >= 0 && cur.x <= 1 && cur.y >= 0 && cur.y <= 1);
             
             if (i && j) {
                 indices.push_back(cnt);

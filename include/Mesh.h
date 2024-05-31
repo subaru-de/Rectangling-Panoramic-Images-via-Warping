@@ -19,6 +19,7 @@ public:
     void displace(Mat &dispV, Mat &dispH);
     void callGL();
     void callEnergy();
+    pair<double, double> getScale();
 };
 
 Mesh::Mesh(Mat &img):
@@ -103,6 +104,23 @@ void Mesh::callEnergy() {
     //     } cout << '\n';
     // } cout << '\n';
     Energy energy(img, ver, nver);
+}
+
+pair<double, double> Mesh::getScale() {
+    double sx = 0.0, sy = 0.0, cnt = 0.0, tmp = 0.0;
+    for (int i = 1; i < ver.size(); i++) {
+        for (int j = 1; j < ver[i].size(); j++, cnt++) {
+            tmp = max(nver[i].x, nver[i - nver[i].size()].x) - min(nver[i - 1].x, nver[i - nver[i].size() - 1].x);
+            tmp /= max(ver[i].x, ver[i - ver[i].size()].x) - min(ver[i - 1].x, ver[i - ver[i].size() - 1].x);
+            sx += tmp;
+            tmp = max(nver[i].y, nver[i - 1].y) - min(nver[i - nver[i].size()].y, nver[i - nver[i].size() - 1].y);
+            tmp /= max(ver[i].y, ver[i - 1].y) - min(ver[i - ver[i].size()].y, ver[i - ver[i].size() - 1].y);
+            sy += tmp;
+        }
+    }
+    sx /= cnt;
+    sy /= cnt;
+    return make_pair(sx, sy);
 }
 
 // #endif

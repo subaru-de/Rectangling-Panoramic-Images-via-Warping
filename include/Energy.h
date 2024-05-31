@@ -124,15 +124,15 @@ void Energy::optimize() {
         MatrixXd YY(A.rows() + C.rows() + B.rows(), 1);
         YY << MatrixXd::Zero(A.rows() + C.rows(), 1), Y;
 
-        std::ofstream outfile;
-        outfile.open("/home/nxte/codes/Rectangling-Panoramic-Images-via-Warping/include/matrix_output.txt");
-        if (outfile.is_open()) {
-            outfile << L << "\n\n\n";
-            outfile.close();
-            std::cout << "矩阵已成功写入文件 matrix_output.txt" << std::endl;
-        } else {
-            std::cerr << "无法打开文件" << std::endl;
-        }
+        // std::ofstream outfile;
+        // outfile.open("/home/nxte/codes/Rectangling-Panoramic-Images-via-Warping/include/matrix_output.txt");
+        // if (outfile.is_open()) {
+        //     outfile << L << "\n\n\n";
+        //     outfile.close();
+        //     std::cout << "矩阵已成功写入文件 matrix_output.txt" << std::endl;
+        // } else {
+        //     std::cerr << "无法打开文件" << std::endl;
+        // }
 
         // L * V = YY
         SparseQR<SparseMatrix<double>, COLAMDOrdering<int>> solver;
