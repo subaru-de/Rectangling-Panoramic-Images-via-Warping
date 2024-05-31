@@ -183,9 +183,9 @@ void GLproc::getData(vector<GLfloat> &vertices, vector<GLuint> &indices) {
         for (int j = 0; j < ver[i].size(); j++, cnt++) {
             // positions
             Point2f cur = nver[i][j];
-            cur.x /= 1.0f * SCR_WIDTH;
+            cur.x /= 1.0f * (SCR_WIDTH - 1);
             cur.y = SCR_HEIGHT - cur.y - 1.0f;
-            cur.y /= 1.0f * SCR_HEIGHT;
+            cur.y /= 1.0f * (SCR_HEIGHT - 1);
             cur *= 2.0f;
             cur -= Point2f(1.0f, 1.0f);
             vertices.push_back(cur.x);
