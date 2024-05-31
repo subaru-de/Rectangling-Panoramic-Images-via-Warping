@@ -46,8 +46,9 @@ public:
 
 Rectangling::Rectangling(Mat &image):
 img(image) {
-    clock_t start_t = clock();
+    imwrite("../output/initial.jpg", img);
     img.copyTo(img_bak);
+    clock_t start_t = clock();
     init();
     // showImg();
     
@@ -63,11 +64,21 @@ img(image) {
 
     resImg.create(img.rows, img.cols, CV_8UC3);
     Mesh mesh(img, resImg);
-    showMesh(mesh, 0, 1);
+    {
+        Mat res;
+        img.copyTo(res);
+        mesh.putMesh(res, 1);
+        imwrite("../output/img_with_mesh.jpg", res);
+    }
     img_bak.copyTo(img);
     mesh.displace(dispV, dispH);
 
-    showMesh(mesh, 1, 1);
+    {
+        Mat res;
+        img.copyTo(res);
+        mesh.putMesh(res, 1);
+        imwrite("../output/initial_img_with_mesh.jpg", res);
+    }
     mesh.callEnergy();
 
     clock_t mid2_t = clock();
@@ -76,6 +87,12 @@ img(image) {
 
     mesh.callGL();
     resImg = mesh.getRes();
+    {
+        Mat res;
+        resImg.copyTo(res);
+        mesh.putMesh(res, 0);
+        imwrite("../output/result_before_with_mesh.jpg", res);
+    }
     imwrite("../output/result_before_Post_processing.jpg", resImg);
 
     clock_t mid3_t = clock();
@@ -92,7 +109,12 @@ img(image) {
 
     mesh.callGL();
     finImg = mesh.getRes();
-    showMesh(mesh, 1, 0);
+    {
+        Mat res;
+        finImg.copyTo(res);
+        mesh.putMesh(res, 0);
+        imwrite("../output/result_with_mesh.jpg", res);
+    }
     imwrite("../output/result.jpg", finImg);
 
     std::cout << "Established, used ";
@@ -375,19 +397,14 @@ void Rectangling::showSeam() {
 }
 
 void Rectangling::showMesh(Mesh &mesh, bool initial, bool showVer) {
-    // cout << "ooorz\n";
     Mat res;
-    // cout << "orz\n";
     if (!showVer) {
         finImg.copyTo(res);
     }
     else {
         img.copyTo(res);
     }
-    // cout << "oooooooo\n";
     mesh.putMesh(res, showVer);
-    // imshow("Image", res);
-    // waitKey(0);
     if (!showVer) imwrite("../output/result_with_mesh.jpg", res);
     else if (!initial) imwrite("../output/img_with_mesh.jpg", res);
     else imwrite("../output/initial_img_with_mesh.jpg", res);
