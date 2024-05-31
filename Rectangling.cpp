@@ -10,7 +10,7 @@ using std::string;
 using namespace cv;
 
 int main(int argc, char** argv) {
-    cv::CommandLineParser parser(argc, argv, "{@input| ../img/img5.jpg |}");
+    cv::CommandLineParser parser(argc, argv, "{@input| ../img/img1.jpg |}");
     string filename = parser.get<string>("@input");
     if (filename.empty()) {
         std::cout << "\nDurn, empty filename" << std::endl;
