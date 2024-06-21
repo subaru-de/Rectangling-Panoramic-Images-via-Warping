@@ -60,6 +60,8 @@ The least squares solution can be obtained by solving the following system of li
 
 From a practical perspective, with $V$ fixed, $\theta_m$ can be obtained by calculating the average rotation angle of the line segments within a bin.
 
+Note that it's important to set `  glPixelStorei(GL_UNPACK_ALIGNMENT, 1)` and `glPixelStorei(GL_PACK_ALIGNMENT, 1)`.
+
 #### P.S.
 
 For the project is almost done within 10 days, it's much far from perfect.
