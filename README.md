@@ -56,13 +56,7 @@ $\displaystyle\min_{V}\{E = \displaystyle\|AV\|^2 + \lambda_{L} \|CFV\|^2 + \lam
 
 The least squares solution can be obtained by solving the following system of linear equations.
 
-<script type="text/javascript" async
-  src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/MathJax.js?config=TeX-MML-AM_CHTML">
-</script>
-
-<p>
-\[ \left[ \begin{array}{c} A \ CF \ B \end{array} \right] V = \left[ \begin{array}{c} 0 \ 0 \ Y \end{array} \right] \]
-</p>
+![equation](./img/equ.png)
 
 From a practical perspective, with $V$ fixed, $\theta_m$ can be obtained by calculating the average rotation angle of the line segments within a bin.
 
