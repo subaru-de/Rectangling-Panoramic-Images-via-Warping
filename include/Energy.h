@@ -21,7 +21,7 @@ using namespace Eigen;
 
 class Energy {
 private:
-    const double lambdaLine = 100.0;
+    const double lambdaLine = 100;
     const double lambdaBound = 1e6;
     
     static const int cntBin = 50;
@@ -275,7 +275,8 @@ void Energy::getC() {
             for (int k = 0; k < lines[i][j].size(); k++, Nl++) {
                 // cout << k << "quq\n";
                 lin &l = lines[i][j][k];
-                Point2d vecl = (l.second - l.first) / dis(l.first, l.second);
+                Point2d vecl = (l.second - l.first);
+                Point2d dvecl = vecl / dis(l.first, l.second);
                 MatrixXd R(2, 2), e(2, 1);
                 // cout << k << "qoq\n";
                 
@@ -293,15 +294,15 @@ void Energy::getC() {
                 // cout << "qwqCl: \n" << Cl << '\n';
                 Cl = Cl * F[i][j][k];
                 // cout << "Cl: \n" << Cl << '\n';
-                bool flag = 0;
-                for (int u = 0; u < 8; u++) {
-                    if (Cl(0, u)) flag = 1;
-                }
+                // bool flag = 0;
+                // for (int u = 0; u < 8; u++) {
+                //     if (Cl(0, u)) flag = 1;
+                // }
                 // assert(flag == 1);
-                flag = 0;
-                for (int u = 0; u < 8; u++) {
-                    if (Cl(0, u)) flag = 1;
-                }
+                // flag = 0;
+                // for (int u = 0; u < 8; u++) {
+                //     if (Cl(0, u)) flag = 1;
+                // }
                 // assert(flag == 1);
                 for (int u = 0, uo, vo; u < 2; u++) {
                     uo = Nl * 2 + u;

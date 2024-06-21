@@ -75,7 +75,7 @@ img(img), ver(ver) {
     lines.resize(ver.size(), vector<vector<lin>>(ver[0].size(), vector<lin>()));
     F.resize(ver.size(), vector<vector<MatrixXd>>(ver[0].size(), vector<MatrixXd>()));
 
-    // const double eps = 1e-3;
+    const double diseps = 1;
     for (int i = 1; i < ver.size(); i++) {
         // cout << i << '\n';
         vector<Point2f> contour;
@@ -101,7 +101,7 @@ img(img), ver(ver) {
                 // 都在内部
                 if (flag1 >= eps && flag2 >= eps) {
                     processSeg(s, t);
-                    if (dis(s, t) > eps) {
+                    if (dis(s, t) > diseps) {
                         lines[i][j].push_back(lin(s, t));
                         MatrixXd M;
                         getF(M, contour, lines[i][j].back());
@@ -113,7 +113,7 @@ img(img), ver(ver) {
                     if (doIntersect(lin(tl, tr), lin(s, t))) {
                         ins = getIntersection(lin(tl, tr), lin(s, t));
                         processSeg((flag1 >= eps ? s : t), ins);
-                        if (dis((flag1 >= eps ? s : t), ins) > eps) {
+                        if (dis((flag1 >= eps ? s : t), ins) > diseps) {
                             lines[i][j].push_back(lin((flag1 >= eps ? s : t), ins));
                             MatrixXd M;
                             getF(M, contour, lines[i][j].back());
@@ -123,7 +123,7 @@ img(img), ver(ver) {
                     else if (doIntersect(lin(tr, br), lin(s, t))) {
                         ins = getIntersection(lin(tr, br), lin(s, t));
                         processSeg((flag1 >= eps ? s : t), ins);
-                        if (dis((flag1 >= eps ? s : t), ins) > eps) {
+                        if (dis((flag1 >= eps ? s : t), ins) > diseps) {
                             lines[i][j].push_back(lin(flag1 >= eps ? s : t, ins));
                             MatrixXd M;
                             getF(M, contour, lines[i][j].back());
@@ -133,7 +133,7 @@ img(img), ver(ver) {
                     else if (doIntersect(lin(bl, br), lin(s, t))) {
                         ins = getIntersection(lin(bl, br), lin(s, t));
                         processSeg((flag1 >= eps ? s : t), ins);
-                        if (dis((flag1 >= eps ? s : t), ins) > eps) {
+                        if (dis((flag1 >= eps ? s : t), ins) > diseps) {
                             lines[i][j].push_back(lin(flag1 >= eps ? s : t, ins));
                             MatrixXd M;
                             getF(M, contour, lines[i][j].back());
@@ -143,7 +143,7 @@ img(img), ver(ver) {
                     else if (doIntersect(lin(tl, bl), lin(s, t))) {
                         ins = getIntersection(lin(tl, bl), lin(s, t));
                         processSeg((flag1 >= eps ? s : t), ins);
-                        if (dis((flag1 >= eps ? s : t), ins) > eps) {
+                        if (dis((flag1 >= eps ? s : t), ins) > diseps) {
                             lines[i][j].push_back(lin(flag1 >= eps ? s : t, ins));
                             MatrixXd M;
                             getF(M, contour, lines[i][j].back());
@@ -172,7 +172,7 @@ img(img), ver(ver) {
                     }
                     if (ins1.x != -1 && ins2.x != -1) {
                         processSeg(ins1, ins2);
-                        if (dis(ins1, ins2) > eps) {
+                        if (dis(ins1, ins2) > diseps) {
                             lines[i][j].push_back(lin(ins1, ins2));
                             MatrixXd M;
                             getF(M, contour, lines[i][j].back());

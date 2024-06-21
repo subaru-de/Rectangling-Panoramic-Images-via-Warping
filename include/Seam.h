@@ -166,6 +166,51 @@ void Seam::insertVertical(Mat &img, Mat &mask, Mat &dispV, Mat &dispH, Mat &litS
             // }
         }
     }
+
+    // for (int i = 1; i < img.rows; i++) {
+    //     for (int j = 0; j < img.cols; j++) {
+    //         double C = 0;
+    //         if (j > 0 && j < img.cols - 1) {
+    //             Vec3b tmp = img.at<Vec3b>(i, j + 1) - img.at<Vec3b>(i, j - 1);
+    //             C += sqrt(tmp.dot(tmp));
+    //         }
+    //         M.at<double>(i, j) = M.at<double>(i - 1, j) + C;
+    //         from.at<int>(i, j) = j;
+    //         if (j > 0) {
+    //             C = 0;
+    //             if (j > 0) {
+    //                 Vec3b tmp = img.at<Vec3b>(i - 1, j) - img.at<Vec3b>(i, j - 1);
+    //                 C += sqrt(tmp.dot(tmp));
+    //             }
+    //             if (j > 0 && j < img.cols - 1) {
+    //                 Vec3b tmp = img.at<Vec3b>(i, j + 1) - img.at<Vec3b>(i, j - 1);
+    //                 C += sqrt(tmp.dot(tmp));
+    //             }
+    //             if (M.at<double>(i - 1, j - 1) + C < M.at<double>(i, j)) {
+    //                 M.at<double>(i, j) = M.at<double>(i - 1, j - 1) + C;
+    //                 from.at<int>(i, j) = j - 1;
+    //             }
+    //         }
+    //         if (j < img.cols - 1) {
+    //             C = 0;
+    //             if (j < img.cols - 1) {
+    //                 Vec3b tmp = img.at<Vec3b>(i - 1, j) - img.at<Vec3b>(i, j + 1);
+    //                 C += sqrt(tmp.dot(tmp));
+    //             }
+    //             if (j > 0 && j < img.cols - 1) {
+    //                 Vec3b tmp = img.at<Vec3b>(i, j + 1) - img.at<Vec3b>(i, j - 1);
+    //                 C += sqrt(tmp.dot(tmp));
+    //             }
+    //             if (M.at<double>(i - 1, j + 1) + C < M.at<double>(i, j)) {
+    //                 M.at<double>(i, j) = M.at<double>(i - 1, j + 1) + C;
+    //                 from.at<int>(i, j) = j + 1;
+    //             }
+    //         }
+    //         // if (M.at<double>(i, j) < INF || Energy.at<double>(i, j) < INF) {
+    //             M.at<double>(i, j) += Energy.at<double>(i, j);
+    //         // }
+    //     }
+    // }
     /* -------- store seam -------- */
     vector<Point> verSeam(1, {img.rows - 1, 0});
     double mn = M.at<double>(img.rows - 1, 0);
@@ -313,6 +358,50 @@ void Seam::insertHorizontal(Mat &img, Mat &mask, Mat &dispV, Mat &dispH, Mat &li
             // }
         }
     }
+    // for (int j = 1; j < img.cols; j++) {
+    //     for (int i = 0; i < img.rows; i++) {
+    //         double C = 0;
+    //         if (i > 0 && i < img.rows - 1) {
+    //             Vec3b tmp = img.at<Vec3b>(i + 1, j) - img.at<Vec3b>(i - 1, j);
+    //             C += sqrt(tmp.dot(tmp));
+    //         }
+    //         M.at<double>(i, j) = M.at<double>(i, j - 1) + C;
+    //         from.at<int>(i, j) = i;
+    //         if (i > 0) {
+    //             C = 0;
+    //             if (i > 0) {
+    //                 Vec3b tmp = img.at<Vec3b>(i - 1, j) - img.at<Vec3b>(i, j - 1);
+    //                 C += sqrt(tmp.dot(tmp));
+    //             }
+    //             if (i > 0 && i < img.rows - 1) {
+    //                 Vec3b tmp = img.at<Vec3b>(i + 1, j) - img.at<Vec3b>(i - 1, j);
+    //                 C += sqrt(tmp.dot(tmp));
+    //             }
+    //             if (M.at<double>(i - 1, j - 1) + C < M.at<double>(i, j)) {
+    //                 M.at<double>(i, j) = M.at<double>(i - 1, j - 1) + C;
+    //                 from.at<int>(i, j) = i - 1;
+    //             }
+    //         }
+    //         if (i < img.rows - 1) {
+    //             C = 0;
+    //             if (i <img.rows - 1) {
+    //                 Vec3b tmp = img.at<Vec3b>(i + 1, j) - img.at<Vec3b>(i, j - 1);
+    //                 C += sqrt(tmp.dot(tmp));
+    //             }
+    //             if (i > 0 && i < img.rows - 1) {
+    //                 Vec3b tmp = img.at<Vec3b>(i + 1, j) - img.at<Vec3b>(i - 1, j);
+    //                 C += sqrt(tmp.dot(tmp));
+    //             }
+    //             if (M.at<double>(i + 1, j - 1) + C < M.at<double>(i, j)) {
+    //                 M.at<double>(i, j) = M.at<double>(i + 1, j - 1) + C;
+    //                 from.at<int>(i, j) = i + 1;
+    //             }
+    //         }
+    //         // if (M.at<double>(i, j) < INF || Energy.at<double>(i, j) < INF) {
+    //             M.at<double>(i, j) += Energy.at<double>(i, j);
+    //         // }
+    //     }
+    // }
     /* -------- get min and store seam -------- */
     vector<Point> horSeam(1, {0, img.cols - 1});
     double mn = M.at<double>(0, img.cols - 1);
