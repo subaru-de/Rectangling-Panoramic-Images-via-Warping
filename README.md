@@ -55,10 +55,9 @@ After get the grid mesh on the input image, the problem can be convert to a opti
 $\displaystyle\min_{V}\{E = \displaystyle\|AV\|^2 + \lambda_{L} \|CFV\|^2 + \lambda_{B}\|BV-Y\|^2\}$, see [this article](https://iquilezles.org/articles/ibilinear/) for the calculation of $F$.
 
 The least squares solution can be obtained by solving the following system of linear equations.
-$$
-\left[ \begin{array}{c} A \\ CF \\ B \end{array} \right] V = 
-\left[ \begin{array}{c} 0 \\ 0 \\ Y \end{array} \right]
-$$
+
+\[ \left[ \begin{array}{c} A \ CF \ B \end{array} \right] V = \left[ \begin{array}{c} 0 \ 0 \ Y \end{array} \right] \]
+
 From a practical perspective, with $V$ fixed, $\theta_m$ can be obtained by calculating the average rotation angle of the line segments within a bin.
 
 #### P.S.
