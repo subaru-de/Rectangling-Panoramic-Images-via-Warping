@@ -52,7 +52,7 @@ I've tried **Improved Seam Carving**, but found it slower than seam carving. You
 
 After get the grid mesh on the input image, the problem can be convert to a optimization of the following equations with fixed $\theta_{m}$.
 
-$\displaystyle\min_{V}\{E = \displaystyle\|AV\|^2 + \lambda_{L} \|CFV\|^2 + \lambda_{B}\|BV-Y\|^2\}$, see [this article](https://iquilezles.org/articles/ibilinear/) for the calculation of $F$.
+$\displaystyle\min_{V}\{E = \displaystyle ‖AV‖^2 + \lambda_{L} ‖CFV‖^2 + \lambda_{B}‖BV-Y‖^2\}$, see [this article](https://iquilezles.org/articles/ibilinear/) for the calculation of $F$.
 
 The least squares solution can be obtained by solving the following system of linear equations.
 
